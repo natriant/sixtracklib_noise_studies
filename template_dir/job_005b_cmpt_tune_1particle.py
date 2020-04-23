@@ -7,7 +7,7 @@ import numpy as np
 import NAFFlib as pnf
 import matplotlib.pyplot as plt
 
-deltas = np.linspace(-4e-4, 4e-4, 10)
+deltas = np.linspace(-4e-3, 4e-3, 10)
 Qx_list = []
 Qy_list = []
 
@@ -44,7 +44,7 @@ plt.xlabel('dp/p', fontsize=15)
 plt.legend()
 plt.grid()
 plt.tight_layout()
-plt.savefig('./output/Qx_vs_dpp.png')
+#plt.savefig('./output/Qx_vs_dpp.png')
 plt.show()
 
 
@@ -59,6 +59,20 @@ plt.xlabel('dp/p', fontsize=15)
 plt.legend()
 plt.grid()
 plt.tight_layout()
-plt.savefig('./output/Qy_vs_dpp.png')
+#plt.savefig('./output/Qy_vs_dpp.png')
+plt.show()
+
+
+# Qx vs Qy
+fig, ax = plt.subplots()
+ax.plot(Qx_list, Qy_list, '.-', c='C1', label='simulation')
+ax.tick_params(axis='both', which='major', labelsize=15)
+ax.tick_params(axis='both', which='minor', labelsize=10)
+plt.ylabel('Qy', fontsize=15)
+plt.xlabel('Qx', fontsize=15)
+plt.legend()
+plt.grid()
+plt.tight_layout()
+#plt.savefig('./output/Qy_vs_dpp.png')
 plt.show()
 

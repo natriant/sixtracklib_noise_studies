@@ -29,7 +29,7 @@ n_turns = 1000
 
 # Set initial transverse and longitudinal offset from the close orbit
 Dx_wrt_CO, Dpx_wrt_CO, Dy_wrt_CO, Dpy_wrt_CO = 1e-4, 0, 1e-4, 0
-Dsigma_wrt_CO, Ddelta_wrt_CO = 0, float(sys.argv[1])
+Dsigma_wrt_CO, Ddelta_wrt_CO = 200e-3 , float(sys.argv[1])
 
 print('delta = {}'.format(Ddelta_wrt_CO))
 
