@@ -23,14 +23,16 @@ for parameter in pp.madx_settings:
     setting = pp.madx_settings[parameter]
     mad.input(f'{parameter} = {setting};')
 
+mad.call('./sps/cmd/sps_setMultipoles_upto7.cmd')
+mad.input('exec, set_Multipoles;')
+mad.call('./sps/cmd/sps_assignMultipoles_upto7.cmd')
+mad.input('exec, AssignMultipoles;')
 mad.call('./sps/cmd/sps_matching.cmd')
 mad.input('exec, SPS_matchtunes(QH, QV);')
 mad.input('exec, SPS_setchroma_Q26(QPH, QPV);')
 mad.input('acta.31637, harmon=%d;'%pp.harmonic_number)
 mad.call('./sps/cmd/sps_chroma_matching.cmd')
 mad.input('exec, match_chroma(QPH ,QPV);')
-
-mad.use(pp.seq_name)
 
 # twiss
 twtable = mad.twiss()

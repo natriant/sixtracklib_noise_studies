@@ -77,19 +77,11 @@
  use, sequence=SPS;
  twiss;
 
- ! match tunes
- !match, sequence=sps;
- !vary, name=kqd, step=1e-8;
- !vary, name=kqf1, step=1e-8;
- !global, q1=26.13, q2=26.18;
- !jacobian,calls=1000,tolerance=1e-12;
- !endmatch;
 
-
- !twiss;
- use, sequence=SPS;
- select,flag=twiss,column=name,s,x,y,mux,betx,alfx,muy,bety,alfy,dx,dy,k2l;
- twiss, save, centre, file=../input/twiss.tfs;
+ !twiss; as the chroma matching is not done here, the k2l is incorrect
+ !use, sequence=SPS;
+ !select,flag=twiss,column=name,s,x,y,mux,betx,alfx,muy,bety,alfy,dx,dy,k2l;
+ !twiss, save, centre, file=../input/twiss.tfs;
 
 option, -warn;
 save, sequence=sps, beam=true, file=sps_thin.seq;
