@@ -23,6 +23,7 @@ for parameter in pp.madx_settings:
     setting = pp.madx_settings[parameter]
     mad.input(f'{parameter} = {setting};')
 
+mad.use(pp.seq_name)
 mad.call('./sps/cmd/sps_setMultipoles_upto7.cmd')
 mad.input('exec, set_Multipoles;')
 mad.call('./sps/cmd/sps_assignMultipoles_upto7.cmd')

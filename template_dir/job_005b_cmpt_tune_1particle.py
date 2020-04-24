@@ -7,7 +7,8 @@ import numpy as np
 import NAFFlib as pnf
 import matplotlib.pyplot as plt
 
-deltas = np.linspace(-4e-3, 4e-3, 10)
+deltas = np.linspace(-8e-3, 8e-3, 10)
+
 Qx_list = []
 Qy_list = []
 

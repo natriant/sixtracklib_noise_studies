@@ -74,7 +74,7 @@
  use, sequence=sps;
  select, flag=makethin, slice=1, thick=false;
  makethin, sequence=sps, style=teapot, makedipedge=true;
- use, sequence=SPS;
+ !use, sequence=SPS;
  twiss;
 
 

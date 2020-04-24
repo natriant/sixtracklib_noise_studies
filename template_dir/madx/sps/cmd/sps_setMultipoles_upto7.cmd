@@ -1,6 +1,5 @@
 set_Multipoles : macro ={
 
-	USE, SEQUENCE=SPS;
 	b3a=-2.8e-03;! +/- 5.7e-04
 	b3b=1.6e-03;! +/- 3.2e-04
 
