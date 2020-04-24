@@ -1,9 +1,14 @@
  option, -echo;
 
+
+/***************************************************
+* YOU NEED TO RUN THIS SCRIPT IN AFS
+***************************************************/
+
 /***************************************************
  * SPECIFY THE SPS BEAM CONFIGURATION, ENERGY and EMITTANCES
  ***************************************************/
-
+ 
  call, file = 'sps/beams/lhc_beam_injection.beamx';
  !Beam, particle = proton, energy = 270.0, NPART=1.3E11, BUNCHED;
 /***************************************************
