@@ -29,7 +29,7 @@ n_turns = 1000
 
 # Set initial transverse and longitudinal offset from the close orbit
 Dx_wrt_CO, Dpx_wrt_CO, Dy_wrt_CO, Dpy_wrt_CO = 1e-4, 0, 1e-4, 0
-Dsigma_wrt_CO, Ddelta_wrt_CO = 200e-3 , float(sys.argv[1])
+Dsigma_wrt_CO, Ddelta_wrt_CO = 200e-3, 0.0 #, float(sys.argv[1])
 
 print('delta = {}'.format(Ddelta_wrt_CO))
 
@@ -63,6 +63,34 @@ circumference = line.get_length()
 
 tbt_dict = {'turn':[], 'time':[], 'x': [], 'px':[], 'y': [], 'py': [], 'sigma': [], 'delta': []}
 
+
+# flags for type of noise
+white_noise = False
+peaked_noise = True
+
+if white_noise:
+    stdNoise = 1e-8
+    noiseKicks = np.random.normal(0, stdNoise, n_turns)
+
+if peaked_noise:    
+    # A. Noise parameters
+    phi_0 = 1e-8 # amplitude of noise
+    Delta_psi = 0.32 # the peak of the spectrum
+    # B. Parameters for ksi 
+    mean = 0.0
+    std = 0.02 # the rms width of the noise spectrum 
+    psi_t = 0
+    psi_t_list = [] # list to append the phase of the noise signal
+    # C. create the phase of the noise signal
+    for i in range(0, pp.n_turns_max):
+        psi_t_list.append(psi_t)
+        ksi = np.random.normal(mean, std) # different seed on each turn
+        psi_t = psi_t + 2*np.pi*Delta_psi + 2*np.pi*ksi
+    # D. Construct the noise signal
+    phi_noise = phi_0*np.cos(psi_t_list)
+
+
+
 job = sixtracklib.TrackJob(elements, ps)
 
 # if you want to update elements, check job002..
@@ -75,7 +103,12 @@ for turn in range(1, n_turns+1):
 
     job.collect_particles()
     res = ps.particles[0]
-    
+
+    # Uncomment for amplitude noise
+    #res.py += ampKicks[turn-1]*np.sin(2*np.pi*400.789e6/(res.beta0*pysixtrack.Particles.clight)*res.sigma)
+    # Uncommnet for phase noise
+    res.py += phi_noise[turn-1]*np.cos(2*np.pi*400.789e6/(res.beta0*pysixtrack.Particles.clight)*res.sigma) # phase noise
+ 
     job.push_particles()
     indx_alive = np.where(res.state)
     x = res.x[indx_alive]

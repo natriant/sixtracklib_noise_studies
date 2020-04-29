@@ -9,8 +9,8 @@ plot_dir = './png/'
 
 Qx = 26.130
 Qy = 26.180
-Qpx = 2.0
-Qpy = 2.0
+Qpx = 0.0
+Qpy = 0.0
 
 # MAD-X parameters dictionary
 madx_settings = {'QH':Qx, 'QV':Qy, 'QPH':Qpx, 'QPV':Qpy}
@@ -23,12 +23,12 @@ harmonic_number = 4620
 V_RF = 0. #2.37*1e6 #2.0*1e6
 lag_RF_deg = 180.
 
-bunchlength_rms = 0.155 #0.22 # meters
+bunchlength_rms = 1.55e-3 #0.155 #0.22 # meters
 JohoParameter = 4 # longitudinal form factor of binomial distribution (inf = Gaussian)
 z_max = np.sqrt((JohoParameter+1.)/2.) * 2 * bunchlength_rms
 neps_x = 2e-6 #2.5e-6
 neps_y = 2e-6 #2.5e-6 / 1e6
-n_macroparticles = 1 #100000 
+n_macroparticles = 100 #100000 
 number_of_particles = 1 #1e11 
 macro_size = number_of_particles/n_macroparticles
 
