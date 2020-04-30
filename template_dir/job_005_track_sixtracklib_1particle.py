@@ -63,19 +63,24 @@ circumference = line.get_length()
 
 tbt_dict = {'turn':[], 'time':[], 'x': [], 'px':[], 'y': [], 'py': [], 'sigma': [], 'delta': []}
 
+# flags for noise type 
+dpy_kick = False
+real_CC_noise = True
 
 # flags for type of noise
-white_noise = False
-peaked_noise = True
+white_noise = True
+peaked_noise = False
 
 if white_noise:
+    print('white noise')
     stdNoise = 1e-8
     noiseKicks = np.random.normal(0, stdNoise, n_turns)
 
-if peaked_noise:    
+if peaked_noise: # only phase noise for now  
     # A. Noise parameters
     phi_0 = 1e-8 # amplitude of noise
     Delta_psi = 0.32 # the peak of the spectrum
+    print('peaked noise at {}'.format(Delta_psi))
     # B. Parameters for ksi 
     mean = 0.0
     std = 0.02 # the rms width of the noise spectrum 
@@ -87,7 +92,7 @@ if peaked_noise:
         ksi = np.random.normal(mean, std) # different seed on each turn
         psi_t = psi_t + 2*np.pi*Delta_psi + 2*np.pi*ksi
     # D. Construct the noise signal
-    phi_noise = phi_0*np.cos(psi_t_list)
+    noiseKicks = phi_0*np.cos(psi_t_list)
 
 
 
@@ -104,11 +109,26 @@ for turn in range(1, n_turns+1):
     job.collect_particles()
     res = ps.particles[0]
 
-    # Uncomment for amplitude noise
-    #res.py += ampKicks[turn-1]*np.sin(2*np.pi*400.789e6/(res.beta0*pysixtrack.Particles.clight)*res.sigma)
-    # Uncommnet for phase noise
-    res.py += phi_noise[turn-1]*np.cos(2*np.pi*400.789e6/(res.beta0*pysixtrack.Particles.clight)*res.sigma) # phase noise
- 
+    if dpy_kick:
+        print('dpy_kick')
+        # Uncomment for amplitude noise
+        #res.py += ampKicks[turn-1]*np.sin(2*np.pi*400.789e6/(res.beta0*pysixtrack.Particles.clight)*res.sigma)
+        # Uncommnet for phase noise
+        res.py += noiseKicks[turn-1]*np.cos(2*np.pi*400.789e6/(res.beta0*pysixtrack.Particles.clight)*res.sigma) # phase noise
+    if real_CC_noise: # only phase noise for now in CC2
+        print('real CC kick')
+        # First you need to update the elements
+        cravity2_id = line.element_names.index('cravity.2')
+        cravity2 = job.beam_elements_buffer.get_object(cravity2_id)
+        assert cravity2 is not None
+        # Now make the changes you want
+        cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn), 0)
+        rad2deg=180./np.pi # convert rad to degrees
+        cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+        #cravity2.set_ps(pp.cravity2_phase, 0)
+
+
+
     job.push_particles()
     indx_alive = np.where(res.state)
     x = res.x[indx_alive]

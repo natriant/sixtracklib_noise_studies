@@ -20,7 +20,7 @@ seq_name = 'sps'
 mass = Particles.pmass
 p0c = 269.99e9 #25.92e9
 harmonic_number = 4620
-V_RF = 0. #2.37*1e6 #2.0*1e6
+V_RF = 2.37*1e6 #2.0*1e6
 lag_RF_deg = 180.
 
 bunchlength_rms = 1.55e-3 #0.155 #0.22 # meters
@@ -28,7 +28,7 @@ JohoParameter = 4 # longitudinal form factor of binomial distribution (inf = Gau
 z_max = np.sqrt((JohoParameter+1.)/2.) * 2 * bunchlength_rms
 neps_x = 2e-6 #2.5e-6
 neps_y = 2e-6 #2.5e-6 / 1e6
-n_macroparticles = 100 #100000 
+n_macroparticles = 10000 #100000 
 number_of_particles = 1 #1e11 
 macro_size = number_of_particles/n_macroparticles
 
@@ -47,7 +47,7 @@ cravity1_ks0L_from_turn = lambda turn: np.interp(turn, [0,1,1e12],
         cravity1_voltage / p0c * np.array([0,1,1]))
 
 # parameters for cc2
-cravity2_voltage = 0 #1e6 # [V]
+cravity2_voltage = 1e3 #1e6 # [V]
 cravity2_phase = 90. #270.
 cravity2_ks0L_from_turn = lambda turn: np.interp(turn, [0,200,1e12],
         cravity2_voltage / p0c * np.array([0,1,1]))
