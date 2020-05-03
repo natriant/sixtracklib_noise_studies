@@ -68,8 +68,8 @@ dpy_kick = False
 real_CC_noise = True
 
 # flags for type of noise
-white_noise = True
-peaked_noise = False
+white_noise = False
+peaked_noise = True
 
 if white_noise:
     print('white noise')
@@ -87,7 +87,7 @@ if peaked_noise: # only phase noise for now
     psi_t = 0
     psi_t_list = [] # list to append the phase of the noise signal
     # C. create the phase of the noise signal
-    for i in range(0, pp.n_turns_max):
+    for i in range(0, n_turns):
         psi_t_list.append(psi_t)
         ksi = np.random.normal(mean, std) # different seed on each turn
         psi_t = psi_t + 2*np.pi*Delta_psi + 2*np.pi*ksi
@@ -118,15 +118,24 @@ for turn in range(1, n_turns+1):
     if real_CC_noise: # only phase noise for now in CC2
         print('real CC kick')
         # First you need to update the elements
+        cravity1_id = line.element_names.index('cravity.1')
+        cravity1 = job.beam_elements_buffer.get_object(cravity1_id)
+        assert cravity1 is not None
         cravity2_id = line.element_names.index('cravity.2')
         cravity2 = job.beam_elements_buffer.get_object(cravity2_id)
         assert cravity2 is not None
+
+
         # Now make the changes you want
+        # CC1
+        cravity1.set_ksl(pp.cravity1_ks0L_from_turn(turn), 0)
+        cravity1.set_ps(pp.cravity1_phase, 0)
+        # CC2
         cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn), 0)
         rad2deg=180./np.pi # convert rad to degrees
         cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
         #cravity2.set_ps(pp.cravity2_phase, 0)
-
+        job.push_beam_elements()
 
 
     job.push_particles()

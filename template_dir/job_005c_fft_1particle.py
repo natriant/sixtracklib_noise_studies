@@ -2,8 +2,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-tbt_list= ['CC1e3V', 'CC1e3V_WhiteNoise', 'CC1e3V_Peaked0_32_ksi0_02']
-tbt_list = ['CC1MV']
+tbt_list = ['noNoise', 'WhiteNoise', 'PeakedNoise0_32_ksi0_002']
 path_to_tbt = './output/'
 
 
@@ -13,9 +12,6 @@ f = np.linspace(0,1/T, N) # frequencies
 
 for i in tbt_list:
     tbt= pickle.load(open(path_to_tbt+'tbt_{}.pkl'.format(i), 'rb'))
-    plt.plot(tbt['y'])
-    plt.show()
-    quit()
     my_signal = []
     for turn in range(0, N):
         my_signal.append(tbt['y'][turn][0]) 
