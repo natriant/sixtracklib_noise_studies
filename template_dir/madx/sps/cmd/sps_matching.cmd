@@ -178,3 +178,36 @@ SPS_setchroma_Q22(QPH_setvalue, QPV_setvalue) : macro = {
 	kLSFC := ksfc;	
 	option, info;
 };
+
+match_chroma(QPH_val, QPV_val) : macro ={
+
+        value QPH_val;
+        value QPV_val;
+        ! match chromaticity
+        match, sequence=sps;
+        vary, name=QPH;
+        vary, name=QPV;
+        global, dq1=QPH_val, dq2=QPV_val;
+        jacobian, calls=1000, tolerance=1e-20;
+        endmatch;
+        twiss;
+
+
+
+};
+
+
+match_octupoles(axx_val, ayy_val) : macro = {
+	call, file='ptc/PTC.macro';
+	match, use_macro;
+	vary, name=KLOD, STEP=1.E-8;
+	vary, name=KLOF, STEP=1.E-8;
+	use_macro, name=PTCchroma;
+	constraint, expr = axx =axx_val;
+ 	!constraint, expr = axy =-400;
+ 	constraint, expr = ayy =ayy_val;
+	lmdif;
+ 	endmatch;
+	value axx_val;
+};
+
