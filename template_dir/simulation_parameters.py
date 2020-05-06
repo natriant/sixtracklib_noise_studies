@@ -42,13 +42,13 @@ turns_between_print = 100
 turns_to_print = range(turns_between_print,n_turns_max+1,turns_between_print)
 
 # parameters for cc1
-cravity1_voltage = 3e6 #0 #3e6 [V]
+cravity1_voltage = 1e6 #0 #3e6 [V]
 cravity1_phase = 90.
 cravity1_ks0L_from_turn = lambda turn: np.interp(turn, [0,1,1e12],
         cravity1_voltage / p0c * np.array([0,1,1]))
 
 # parameters for cc2
-cravity2_voltage = 3e6 #1e6 # [V]
+cravity2_voltage = 1e6 #1e6 # [V]
 cravity2_phase = 270. #90. 
 cravity2_ks0L_from_turn = lambda turn: np.interp(turn, [0,1,1e12],
         cravity2_voltage / p0c * np.array([0,1,1])) # remember to rump up when you have 1 cavity

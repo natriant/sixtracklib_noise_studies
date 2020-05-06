@@ -206,8 +206,7 @@ match_octupoles(axx_val, ayy_val) : macro = {
 	constraint, expr = axx =axx_val;
  	!constraint, expr = axy =-400;
  	constraint, expr = ayy =ayy_val;
-	lmdif;
+	jacobian;
  	endmatch;
-	value axx_val;
 };
 
