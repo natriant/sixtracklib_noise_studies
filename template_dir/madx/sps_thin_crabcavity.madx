@@ -11,8 +11,8 @@
  ***************************************************/
 
  call, file = 'sps/elements/sps.ele';
- call, file = 'sps/aperture/aperturedb_1.dbx';
- call, file = 'sps/aperture/aperturedb_2.dbx';
+ !call, file = 'sps/aperture/aperturedb_1.dbx';
+ !call, file = 'sps/aperture/aperturedb_2.dbx';
  call, file = 'sps/sequence/sps.seq';
  !call, file = 'sps/aperture/aperturedb_3.dbx';
  call, file = 'sps/strength/SPS_Q20.str';
