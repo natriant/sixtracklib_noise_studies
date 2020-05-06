@@ -25,18 +25,20 @@ for parameter in pp.madx_settings:
 
 mad.use(pp.seq_name)
 # Include b3b5b7 in MBA MBB
+'''
 mad.call('./sps/cmd/sps_setMultipoles_upto7.cmd')
 mad.input('exec, set_Multipoles;')
 mad.call('./sps/cmd/sps_assignMultipoles_upto7.cmd')
 mad.input('exec, AssignMultipoles;')
+'''
 # Tune and Chromaticity matching
 mad.call('./sps/cmd/sps_matching.cmd')
 mad.input('exec, SPS_matchtunes(QH, QV);')
 mad.input('exec, SPS_setchroma_Q26(QPH, QPV);')
 mad.input('acta.31637, harmon=%d;'%pp.harmonic_number)
-mad.call('./sps/cmd/sps_chroma_matching.cmd')
 mad.input('exec, match_chroma(QPH ,QPV);')
-
+# Octupole matching
+mad.input('exec, match_octupoles(axx_val, ayy_val);')
 # twiss
 twtable = mad.twiss()
 
