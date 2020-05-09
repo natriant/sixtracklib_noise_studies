@@ -38,7 +38,7 @@ mad.input('exec, SPS_setchroma_Q26(QPH, QPV);')
 mad.input('acta.31637, harmon=%d;'%pp.harmonic_number)
 mad.input('exec, match_chroma(QPH ,QPV);')
 # Octupole matching
-mad.input('exec, match_octupoles(axx_val, ayy_val);')
+mad.input('exec, match_octupoles(ayy_val, axy_val);')
 # twiss
 twtable = mad.twiss()
 

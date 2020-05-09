@@ -197,15 +197,15 @@ match_chroma(QPH_val, QPV_val) : macro ={
 };
 
 
-match_octupoles(axx_val, ayy_val) : macro = {
+match_octupoles(ayy_val, axy_val) : macro = {
 	call, file='ptc/PTC.macro';
 	match, use_macro;
 	vary, name=KLOD, STEP=1.E-8;
 	vary, name=KLOF, STEP=1.E-8;
 	use_macro, name=PTCchroma;
-	constraint, expr = axx =axx_val;
- 	!constraint, expr = axy =-400;
- 	constraint, expr = ayy =ayy_val;
+	!constraint, expr=axx=axx_val;
+ 	constraint, expr=ayy=ayy_val;
+ 	constraint, expr=axy=axy_val;
 	jacobian;
  	endmatch;
 };

@@ -11,10 +11,10 @@ Qx = 26.130
 Qy = 26.180
 Qpx = 0.0
 Qpy = 0.0
-axx_val = 500.0
 ayy_val = 500.0
+axy_val = 0.0
 # MAD-X parameters dictionary
-madx_settings = {'QH':Qx, 'QV':Qy, 'QPH':Qpx, 'QPV':Qpy, 'axx_val':axx_val, 'ayy_val':ayy_val}
+madx_settings = {'QH':Qx, 'QV':Qy, 'QPH':Qpx, 'QPV':Qpy, 'ayy_val':ayy_val, 'axy_val':axy_val}
 use_aperture = True #False #
 seq_name = 'sps'
 
