@@ -11,7 +11,7 @@ Qx = 26.130
 Qy = 26.180
 Qpx = 0.0
 Qpy = 0.0
-ayy_val = 500.0
+ayy_val = 1e4
 axy_val = 0.0
 # MAD-X parameters dictionary
 madx_settings = {'QH':Qx, 'QV':Qy, 'QPH':Qpx, 'QPV':Qpy, 'ayy_val':ayy_val, 'axy_val':axy_val}
@@ -21,10 +21,10 @@ seq_name = 'sps'
 mass = Particles.pmass
 p0c = 269.99e9 #25.92e9
 harmonic_number = 4620
-V_RF = 0. #2.37*1e6 #2.0*1e6
+V_RF = 2.37*1e6 #2.0*1e6
 lag_RF_deg = 180.
 
-bunchlength_rms = 1.55e-3 #0.155 #0.22 # meters
+bunchlength_rms = 0.155 #1.55e-3 #0.22 # meters
 JohoParameter = 4 # longitudinal form factor of binomial distribution (inf = Gaussian)
 z_max = np.sqrt((JohoParameter+1.)/2.) * 2 * bunchlength_rms
 neps_x = 2e-6 #2.5e-6
@@ -37,7 +37,7 @@ macro_size = number_of_particles/n_macroparticles
 # tracking parameters
 #track_with = 'pysixtrack'
 track_with = 'sixtracklib'
-n_turns_max = 100000 #10000
+n_turns_max = 1000 #10000
 turns_between_print = 100
 turns_to_print = range(turns_between_print,n_turns_max+1,turns_between_print)
 
