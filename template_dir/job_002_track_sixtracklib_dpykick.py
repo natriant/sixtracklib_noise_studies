@@ -29,7 +29,7 @@ if white_noise:
 if peaked_noise: # only phase noise for now  
     # A. Noise parameters
     phi_0 = 1e-8 # amplitude of noise
-    Delta_psi = 0.32 # the peak of the spectrum
+    Delta_psi = 0.18 # the peak of the spectrum
     print('peaked noise at {}'.format(Delta_psi))
     # B. Parameters for ksi 
     mean = 0.0

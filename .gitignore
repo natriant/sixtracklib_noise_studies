@@ -1,3 +1,5 @@
 /template_dir/output/*
 /template_dir/input/*
 /template_dir/test_dir/*
+/template_dir/tune_distribution/*
+/template_dir/test_upper_limits_ayy/*

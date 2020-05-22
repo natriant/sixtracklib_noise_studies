@@ -11,7 +11,7 @@ Qx = 26.130
 Qy = 26.180
 Qpx = 0.0
 Qpy = 0.0
-ayy_val = 1e4
+ayy_val = 1e6
 axy_val = 0.0
 # MAD-X parameters dictionary
 madx_settings = {'QH':Qx, 'QV':Qy, 'QPH':Qpx, 'QPV':Qpy, 'ayy_val':ayy_val, 'axy_val':axy_val}
@@ -24,7 +24,7 @@ harmonic_number = 4620
 V_RF = 2.37*1e6 #2.0*1e6
 lag_RF_deg = 180.
 
-bunchlength_rms = 0.155 #1.55e-3 #0.22 # meters
+bunchlength_rms = 1.55e-3 #0.155 #1.55e-3 #0.22 # meters
 JohoParameter = 4 # longitudinal form factor of binomial distribution (inf = Gaussian)
 z_max = np.sqrt((JohoParameter+1.)/2.) * 2 * bunchlength_rms
 neps_x = 2e-6 #2.5e-6
