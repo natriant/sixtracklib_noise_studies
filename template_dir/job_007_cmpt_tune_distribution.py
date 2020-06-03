@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import simulation_parameters as pp
 import scipy.stats as ss
+import pandas as pd
+import scipy.stats as st
+import statsmodels.api as sm
+import warnings
 
 # Plotting parameters
 params = {'legend.fontsize': 20,
@@ -69,45 +73,123 @@ for particle in range(n_particles):
         signal = u_data[particle]
         Q_list.append(pnf.get_tune(np.array(signal)))
 
+# Create models from data
+def best_fit_distribution(data, bins=200, ax=None):
+    """Model data by finding best fit distribution to data"""
+    # Get histogram of original data
+    y, x = np.histogram(data, bins=bins, density=True)
+    x = (x + np.roll(x, -1))[:-1] / 2.0
 
-# Use the correct twiss parameters
-if plane_of_interest == 'x':
-    beta = twiss['betx']
-    alpha = twiss['alfx']
-else:
-    beta = twiss['bety']
-    alpha = twiss['alfy']
+    # Distributions to check
+    #distributions = [st.beta, st.expon, st.gamma, st.lognorm, st.norm, st.pearson3, st.triang, st.uniform]
+    distributions = [st.expon]
+
+    # Best holders
+    best_distribution = st.norm
+    best_params = (0.0, 1.0)
+    best_sse = np.inf
+
+    # Estimate distribution parameters from data
+    for distribution in distributions:
+
+        # Try to fit the distribution
+        try:
+            # Ignore warnings from data that can't be fit
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
+
+                # fit dist to data
+                params = distribution.fit(data)
+
+                # Separate parts of parameters
+                arg = params[:-2]
+                loc = params[-2]
+                scale = params[-1]
+
+                # Calculate fitted PDF and error with fit in distribution
+                pdf = distribution.pdf(x, loc=loc, scale=scale, *arg)
+                sse = np.sum(np.power(y - pdf, 2.0))
+
+                # if axis pass in add to plot
+                try:
+                    if ax:
+                        pd.Series(pdf, x).plot(ax=ax)
+                    end
+                except Exception:
+                    pass
+
+                # identify if this distribution is better
+                if best_sse > sse > 0:
+                    best_distribution = distribution
+                    best_params = params
+
+        except Exception:
+            pass
+
+        return best_distribution, best_distribution.name, best_params
 
 
-mean, var  = ss.distributions.expon.fit(Q_list)
-print('mean={}, variance={}'.format(mean, var))
+def make_pdf(dist, params, size=10000):
+    """Generate distributions's Probability Distribution Function """
 
-x = np.linspace(mean-5*var, mean+5*var, len(Q_list))
-fitted_data = ss.distributions.expon.pdf(x, mean, var)
+    # Separate parts of parameters
+    arg = params[:-2]
+    loc = params[-2]
+    scale = params[-1]
 
-# string with distribution info
-textstr = '\n'.join((
-    r'$\mu=%.2f$' % (mean, ),
-    r'$\sigma=%.5f$' % (var, )))
+    # Get sane start and end points of distribution
+    start = dist.ppf(0.01, *arg, loc=loc, scale=scale) if arg else dist.ppf(0.01, loc=loc, scale=scale)
+    end = dist.ppf(0.99, *arg, loc=loc, scale=scale) if arg else dist.ppf(0.99, loc=loc, scale=scale)
 
-# Histogram
-f = plt.figure(figsize=(9.5,8.5))
-ax = f.add_subplot(111)
-ax.hist(Q_list, color = 'C0')
-ax.plot(x, fitted_data, 'r-')
-ax.set_ylabel(r'$\rho (\nu_b)$')
+    # Build PDF and turn into pandas Series
+    x = np.linspace(start, end, size)
+    y = dist.pdf(x, loc=loc, scale=scale, *arg)
+    pdf = pd.Series(y, x)
+    return pdf
+
+
+# Load data, type: pandas
+data = pd.Series(Q_list)
+
+# Plot for comparison
+plt.figure(figsize=(12,8))
+ax = data.plot(kind='hist', bins=50, normed=True, alpha=0.5)
+# Save plot limits
+dataYLim = ax.get_ylim()
+# Find best fit distribution
+best_distribution, best_fit_name, best_fit_params = best_fit_distribution(data, 200, ax)
+best_dist = getattr(st, best_fit_name)
+
+param_names = (best_dist.shapes + ', loc, scale').split(', ') if best_dist.shapes else ['loc', 'scale']
+param_str = ', '.join(['{}={}'.format(k,v) for k,v in zip(param_names, best_fit_params)])
+
+print('param_names',param_names)
+print('param_Strings', param_str)
+print('best fit parameters', best_fit_params)
+#print('stats', best_distribution.stats(best_fit_params[0], loc=best_fit_params[1], scale=best_fit_params[2], moments='mvsk'))
+#print('stats', best_distribution.stats(loc=best_fit_params[0], scale=best_fit_params[1], moments='mvsk'))
+#quit()
+
+
+# Update plots
+ax.set_ylim(dataYLim)
+ax.set_title(u'All Fitted Distributions')
 ax.set_xlabel('Betatron tune')
-props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+ax.set_ylabel(r'$\rho (\nu_b)$')
 
-# place a text box in upper left in axes coords
-ax.text(0.65, 0.95, textstr, transform=ax.transAxes, fontsize=24,
-        verticalalignment='top', bbox=props)
+# Make PDF with best params
+pdf = make_pdf(best_dist, best_fit_params)
 
-plt.grid()
-plt.tight_layout()
+# Display
+plt.figure(figsize=(12,8))
+ax = pdf.plot(lw=2, label='PDF', legend=True)
+data.plot(kind='hist', bins=50, normed=True, alpha=0.5, label='Data', legend=True, ax=ax)
 
-savefig = True
-if savefig:
-    plt.savefig('tune_distribution_ayy1e4.png')
-print('ok')
+param_names = (best_dist.shapes + ', loc, scale').split(', ') if best_dist.shapes else ['loc', 'scale']
+param_str = ', '.join(['{}={}'.format(k,v) for k,v in zip(param_names, best_fit_params)])
+dist_str = '{}({})'.format(best_fit_name, param_str)
+
+ax.set_title(u'Bbest fit distribution \n' + dist_str)
+ax.set_xlabel('Betatron tune')
+ax.set_ylabel(r'$\rho (\nu_b)$')
 plt.show()
