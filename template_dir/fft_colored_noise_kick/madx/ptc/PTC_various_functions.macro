@@ -1,0 +1,194 @@
+// PTC
+///////////////////////////////////////////////////////
+
+PTCmodel=2;
+PTCmethod=6;
+PTCnst=1;
+
+PTCchroma : macro={
+ptc_create_universe;
+  ptc_create_layout,model=PTCmodel,method=PTCmethod,nst=PTCnst, exact=true;
+  PTC_SETSWITCH, debuglevel=0, fringe=true,exact_mis=true;
+  select_ptc_normal, q1=0, q2=0; //fractional tune
+  select_ptc_normal, dq1=1, dq2=1; // chromaticity
+  select_ptc_normal, dq1=2, dq2=2; // second order chrom
+  select_ptc_normal, dq1=3, dq2=3; // third order chrom  
+  select_ptc_normal, anhx=1,0,0, anhy=1,0,0;	// 1st order
+  select_ptc_normal, anhx=0,1,0, anhy=0,1,0;
+
+  PTC_ALIGN;  
+  
+  ptc_normal,deltap=dp,closed_orbit,normal,icase=5,no=4;
+  qx0 =table(normal_results,value,1);
+  qx1 =table(normal_results,value,3);
+  qx2 =table(normal_results,value,5);
+  qx3 =table(normal_results,value,7);  
+  qy0 =table(normal_results,value,2);
+  qy1 =table(normal_results,value,4);
+  qy2 =table(normal_results,value,6);
+  qy3 =table(normal_results,value,8);  
+  axx =table(normal_results,value,9);  
+  axy =table(normal_results,value,10);  
+  ayy =table(normal_results,value,12);
+  
+  value,  qx0, qy0, qx1, qy1, qx2, qy2, qx3, qy3, axx, axy, ayy;
+  write, table=normal_results, file="PTC-normal.ptc";
+ptc_end;
+};
+
+
+
+PTCtunes(dp): macro={
+ptc_create_universe;
+  ptc_create_layout,model=PTCmodel,method=PTCmethod,nst=PTCnst, exact=true;
+  PTC_SETSWITCH, debuglevel=0, fringe=true, exact_mis=true;
+  select_ptc_normal, q1=0, q2=0; //fractional tune
+  PTC_ALIGN;    
+  ptc_normal,deltap=dp,closed_orbit,normal,icase=5,no=2;
+  option, -info;  
+  qx0 =table(normal_results,value,1);
+  qy0 =table(normal_results,value,2);
+  option, info;
+ptc_end;
+};
+
+/*
+PTCtunes(dp): macro={
+ptc_create_universe;
+  ptc_create_layout,model=PTCmodel,method=PTCmethod,nst=PTCnst, exact=true;
+  PTC_SETSWITCH, debuglevel=0, fringe=true, exact_mis=true;
+  select_ptc_normal, q1=0, q2=0; //fractional tune
+  PTC_ALIGN;    
+  ptc_normal,deltap=dp,closed_orbit,normal,icase=5,no=4;
+  option, -info;  
+  qx0 =table(normal_results,value,1);
+  qy0 =table(normal_results,value,2);
+  option, info;
+ptc_end;
+};
+*/
+
+PTC_RDT_3n: macro={
+ ptc_create_universe;
+  ptc_create_layout,model=PTCmodel,method=PTCmethod,nst=PTCnst, exact=true;
+  PTC_SETSWITCH, debuglevel=0, fringe=true,exact_mis=true;
+  select_ptc_normal, q1=0, q2=0; //fractional tune
+  select_ptc_normal, dq1=1, dq2=1; // chromaticity
+  select_ptc_normal, dq1=2, dq2=2; // second order chrom
+  select_ptc_normal, dq1=3, dq2=3; // third order chrom  
+  select_ptc_normal, anhx=1,0,0, anhy=1,0,0;  // 1st order
+  select_ptc_normal, anhx=0,1,0, anhy=0,1,0;
+  select_ptc_normal, haml=3,0,0;
+
+  PTC_ALIGN;  
+  option, -info;
+  ptc_normal,deltap=dp,closed_orbit,normal,icase=5,no=4;
+  qx0 =table(normal_results,value,1);
+  qx1 =table(normal_results,value,3);
+  qx2 =table(normal_results,value,5);
+  qx3 =table(normal_results,value,7);  
+  qy0 =table(normal_results,value,2);
+  qy1 =table(normal_results,value,4);
+  qy2 =table(normal_results,value,6);
+  qy3 =table(normal_results,value,8);  
+  axx =table(normal_results,value,9);  
+  axy =table(normal_results,value,10);  
+  ayy =table(normal_results,value,12);
+  h3000c = table(normal_results,value,13);
+  h3000s = table(normal_results,value,14);
+  h3000a = table(normal_results,value,15);
+  h2100c = table(normal_results,value,16);
+  h2100s = table(normal_results,value,17);
+  h2100a = table(normal_results,value,18);
+  h1020c = table(normal_results,value,19);
+  h1020s = table(normal_results,value,20);
+  h1020a = table(normal_results,value,21);
+  h1011c = table(normal_results,value,22);
+  h1011s = table(normal_results,value,23);
+  h1011a = table(normal_results,value,24);
+  h1002c = table(normal_results,value,25);
+  h1002s = table(normal_results,value,26);
+  h1002a = table(normal_results,value,27);
+  option, info;
+  write, table=normal_results, file="PTC-normal.ptc";
+ ptc_end;
+};
+
+PTC_RDT_4n: macro={
+ ptc_create_universe;
+  ptc_create_layout,model=PTCmodel,method=PTCmethod,nst=PTCnst, exact=true;
+  PTC_SETSWITCH, debuglevel=0, fringe=true,exact_mis=true;
+  select_ptc_normal, q1=0, q2=0; //fractional tune
+  select_ptc_normal, dq1=1, dq2=1; // chromaticity
+  select_ptc_normal, dq1=2, dq2=2; // second order chrom
+  select_ptc_normal, dq1=3, dq2=3; // third order chrom  
+  select_ptc_normal, anhx=1,0,0, anhy=1,0,0;  // 1st order
+  select_ptc_normal, anhx=0,1,0, anhy=0,1,0;
+  select_ptc_normal, haml=4,0,0;
+
+  PTC_ALIGN;  
+  option, -info;
+  ptc_normal,deltap=dp,closed_orbit,normal,icase=5,no=4;
+  qx0 =table(normal_results,value,1);
+  qx1 =table(normal_results,value,3);
+  qx2 =table(normal_results,value,5);
+  qx3 =table(normal_results,value,7);  
+  qy0 =table(normal_results,value,2);
+  qy1 =table(normal_results,value,4);
+  qy2 =table(normal_results,value,6);
+  qy3 =table(normal_results,value,8);  
+  axx =table(normal_results,value,9);  
+  axy =table(normal_results,value,10);  
+  ayy =table(normal_results,value,12);
+  h4000c = table(normal_results,value,13);
+  h4000s = table(normal_results,value,14);
+  h4000a = table(normal_results,value,15);
+  h3100c = table(normal_results,value,16);
+  h3100s = table(normal_results,value,17);
+  h3100a = table(normal_results,value,18);
+  h2020c = table(normal_results,value,19);
+  h2020s = table(normal_results,value,20);
+  h2020a = table(normal_results,value,21);
+  h2011c = table(normal_results,value,22);
+  h2011s = table(normal_results,value,23);
+  h2011a = table(normal_results,value,24);
+  h2002c = table(normal_results,value,25);
+  h2002s = table(normal_results,value,26);
+  h2002a = table(normal_results,value,27);
+  h1120c = table(normal_results,value,28);
+  h1120s = table(normal_results,value,29);
+  h1120a = table(normal_results,value,30);
+  h0040c = table(normal_results,value,31);
+  h0040s = table(normal_results,value,32);
+  h0040a = table(normal_results,value,33);
+  h0031c = table(normal_results,value,34);
+  h0031s = table(normal_results,value,35);
+  h0031a = table(normal_results,value,36);
+  option, info;
+  write, table=normal_results, file="PTC-normal.ptc";
+ ptc_end;
+};
+
+/**
+// PTC TWISS
+ptc_create_universe;
+  ptc_create_layout,model=2,method=6,nst=1, exact=false;
+  PTC_SETSWITCH, debuglevel=0, fringe=true,exact_mis=true;
+  PTC_ALIGN;  
+	select,flag=ptc_twiss_n,column=name,s,beta11,beta21,beta12,beta22,disp1,disp3,x,px,y,py;  
+    create, table=chroma, column=dp,Q1dp,Q2dp;
+	dp=-0.006;
+	while (dp <= 0.006)
+		{ptc_twiss,deltap=dp,closed_orbit,icase=5,no=6, SUMMARY_TABLE=ptc_summ;
+		Q1dp=table(ptc_summ,Q1,1);
+		Q2dp=table(ptc_summ,Q2,1);
+		fill, table=chroma;
+		dp=dp+0.002;
+		};	
+ptc_end;
+
+write, table=chroma, file="chromaticity.PTC.tfs";
+
+plot, vaxis1=Q1dp,Q2dp,haxis=dp, INTERPOLATE=TRUE, NOVERSION=TRUE, COLOUR=100,
+table=chroma, title="PTC chromaticity"; 
+**/

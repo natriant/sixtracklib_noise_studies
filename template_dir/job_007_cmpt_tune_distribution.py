@@ -12,12 +12,12 @@ import statsmodels.api as sm
 import warnings
 
 # Plotting parameters
-params = {'legend.fontsize': 20,
+params = {'legend.fontsize': 18,
           'figure.figsize': (9.5, 8.5),
-          'axes.labelsize': 22,
-          'axes.titlesize': 23,
-          'xtick.labelsize': 22,
-          'ytick.labelsize': 22,
+          'axes.labelsize': 18,
+          'axes.titlesize': 18,
+          'xtick.labelsize': 18,
+          'ytick.labelsize': 18,
           'image.cmap': 'jet',
           'lines.linewidth': 3,
           'lines.markersize': 5,
@@ -27,19 +27,8 @@ plt.rc('text', usetex=False)
 plt.rc('font', family='serif')
 plt.rcParams.update(params)
 
-# Plot the initial distribution 
-initial_distribution = pickle.load(open('./input/initial_coordinates.pkl', 'rb'))
-fig, ax = plt.subplots(1,1,figsize=(9,8))
-ax.plot(np.array(initial_distribution['x'])*1e3, np.array(initial_distribution['y'])*1e3, '.')
-ax.set_xlabel('x (mm)', fontsize=20)
-ax.set_ylabel('y (mm)', fontsize=20)
-plt.grid()
-plt.tight_layout()
-plt.savefig('./input/initial_condition.png')
 
-
-tbt_data = pickle.load(open('./output/tbt.pkl', 'rb'))
-twiss = pickle.load(open('input/twiss_at_start.pkl', 'rb'))
+tbt_data = pickle.load(open('./output/tbt_ayy5e3.pkl', 'rb'))
 plane_of_interest = 'y' # 'y' # type:string
 
 n_turns = tbt_data['turn'][-1]
@@ -81,8 +70,8 @@ def best_fit_distribution(data, bins=200, ax=None):
     x = (x + np.roll(x, -1))[:-1] / 2.0
 
     # Distributions to check
-    #distributions = [st.beta, st.expon, st.gamma, st.lognorm, st.norm, st.pearson3, st.triang, st.uniform]
-    distributions = [st.expon]
+    distributions = [st.beta, st.expon, st.gamma, st.lognorm, st.norm, st.pearson3, st.triang, st.uniform]
+ 
 
     # Best holders
     best_distribution = st.norm
@@ -156,26 +145,33 @@ plt.figure(figsize=(12,8))
 ax = data.plot(kind='hist', bins=50, normed=True, alpha=0.5)
 # Save plot limits
 dataYLim = ax.get_ylim()
+
 # Find best fit distribution
 best_distribution, best_fit_name, best_fit_params = best_fit_distribution(data, 200, ax)
 best_dist = getattr(st, best_fit_name)
+print('The best fit is a {} distribution'.format(best_fit_name))
 
 param_names = (best_dist.shapes + ', loc, scale').split(', ') if best_dist.shapes else ['loc', 'scale']
 param_str = ', '.join(['{}={}'.format(k,v) for k,v in zip(param_names, best_fit_params)])
 
 print('param_names',param_names)
 print('param_Strings', param_str)
-print('best fit parameters', best_fit_params)
-#print('stats', best_distribution.stats(best_fit_params[0], loc=best_fit_params[1], scale=best_fit_params[2], moments='mvsk'))
-#print('stats', best_distribution.stats(loc=best_fit_params[0], scale=best_fit_params[1], moments='mvsk'))
-#quit()
 
+
+# Compute the mean and the variance of the distribution
+if best_fit_name == 'expon':    
+    mean, var = best_distribution.stats(loc=best_fit_params[0], scale=best_fit_params[1], moments='mv')
+elif best_fit_name == 'gamma':
+    mean, var = best_distribution.stats(best_fit_params[0], loc=best_fit_params[1], scale=best_fit_params[2], moments='mv')
+elif best_fit_name =='beta':
+     mean, var = best_distribution.stats(best_fit_params[0], best_fit_params[1], loc=best_fit_params[2], scale=best_fit_params[3], moments='mv')
+else:
+    print('computing the mean and variance of this distibution is not yet implemented')
+
+print('mu={}, var={}, simga={}'.format(mean, var, np.sqrt(var)))
 
 # Update plots
 ax.set_ylim(dataYLim)
-ax.set_title(u'All Fitted Distributions')
-ax.set_xlabel('Betatron tune')
-ax.set_ylabel(r'$\rho (\nu_b)$')
 
 # Make PDF with best params
 pdf = make_pdf(best_dist, best_fit_params)
@@ -186,10 +182,13 @@ ax = pdf.plot(lw=2, label='PDF', legend=True)
 data.plot(kind='hist', bins=50, normed=True, alpha=0.5, label='Data', legend=True, ax=ax)
 
 param_names = (best_dist.shapes + ', loc, scale').split(', ') if best_dist.shapes else ['loc', 'scale']
-param_str = ', '.join(['{}={}'.format(k,v) for k,v in zip(param_names, best_fit_params)])
+param_str = ', '.join(['{}={:.3f}'.format(k,v) for k,v in zip(param_names, best_fit_params)])
 dist_str = '{}({})'.format(best_fit_name, param_str)
 
-ax.set_title(u'Bbest fit distribution \n' + dist_str)
+ax.set_title('Best fit distribution \n {} \n mean={:.3f}, sigma={:.5f}'.format(dist_str, mean, np.sqrt(var) ))
+
+#ax.set_title('Best fit distribution:{} \n mu={:.3f}, sigma={:.5f}'.format(best_fit_name, mean, np.sqrt(var)))
 ax.set_xlabel('Betatron tune')
 ax.set_ylabel(r'$\rho (\nu_b)$')
+plt.savefig('tune_distribution_ayy5e3.png')
 plt.show()
