@@ -1,0 +1,5 @@
+/template_dir/fft_colored_noise_kick
+/template_dir/tune_distribution
+/template_dir/output/*.pkl
+/template_dit/input/*.pkl
+
