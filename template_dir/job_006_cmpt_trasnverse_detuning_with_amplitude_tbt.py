@@ -110,7 +110,8 @@ print('min DQ', min(detuning))
 
 fig, ax = plt.subplots(1,1,figsize=(8,7))
 ax.plot(np.array(2*J_initial)*1e7, detuning*1e3, 'o', c='b', label = r'$\Delta Q_{}={:.2f}e-3$'.format(plane_of_interest, DQ*1e3))
-plt.plot(np.array(2*J_initial)*1e7, (m_pn*2*J_initial+b_pn)*1e3, c = 'r', linewidth=2, label=r'$\alpha_{}={:.2f}$'.format(plane_of_interest, m_pn))
+plt.plot(np.array(2*J_initial)*1e7, (m_pn*2*J_initial+b_pn)*1e3, c = 'r', linewidth=2, label='fit, '+ r'$\alpha_{}={:.2f}$'.format(plane_of_interest, m_pn))
+plt.plot(np.array(2*J_initial)*1e7, 2*J_initial*1e5*1e3, c='g', label='theory, '+ r'$\alpha_{}={:.2f}$'.format(plane_of_interest, 1e5))
 ax.set_xlabel('2J{}'.format(plane_of_interest) + r'$\cdot 10^{-7}$')
 ax.set_ylabel('(Q{} -Q{}0)'.format(plane_of_interest, plane_of_interest)+ r'$\cdot 10^{-3}$')
 #ax.set_ylim(0.0,1e-4)
@@ -122,4 +123,7 @@ savefig = True
 if savefig:
     plt.savefig('tune_shift.png')
 print('ok')
+
+print('rms Dqy={}'.format(np.std(Q_list)))
+print('rms Jy={}'.format(np.std(J_initial)))
 
