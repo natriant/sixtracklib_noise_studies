@@ -112,5 +112,5 @@ ax.set_title('Best fit distribution \n {} \n mean={:.3f}, sigma={:.5f}'.format(d
 #ax.set_title('Best fit distribution:{} \n mu={:.3f}, sigma={:.5f}'.format(best_fit_name, mean, np.sqrt(var)))
 ax.set_xlabel('Betatron tune')
 ax.set_ylabel(r'$\rho (\nu_b)$')
-plt.savefig('tune_distribution_ayy5e3.png')
+#plt.savefig('tune_distribution_ayy5e3.png')
 plt.show()
