@@ -11,8 +11,8 @@ def best_fit_distribution(data, bins=200, ax=None):
     x = (x + np.roll(x, -1))[:-1] / 2.0
 
     # Distributions to check
-    distributions = [st.beta, st.expon, st.gamma, st.lognorm, st.norm, st.pearson3, st.triang, st.uniform]
-
+    #distributions = [st.beta, st.expon, st.gamma, st.lognorm, st.norm, st.pearson3, st.triang, st.uniform]
+    distributions = [st.expon] # source: octupoles 
 
     # Best holders
     best_distribution = st.norm
