@@ -9,12 +9,12 @@ import pandas as pd
 from lib.FitDistribution import *
 
 # Plotting parameters
-params = {'legend.fontsize': 18,
-          'figure.figsize': (9.5, 8.5),
-          'axes.labelsize': 18,
-          'axes.titlesize': 18,
-          'xtick.labelsize': 18,
-          'ytick.labelsize': 18,
+params = {'legend.fontsize': 22,
+          'figure.figsize': (12.5, 11.5),
+          'axes.labelsize': 28,
+          'axes.titlesize': 28,
+          'xtick.labelsize': 28,
+          'ytick.labelsize': 28,
           'image.cmap': 'jet',
           'lines.linewidth': 3,
           'lines.markersize': 5,
@@ -23,6 +23,61 @@ params = {'legend.fontsize': 18,
 plt.rc('text', usetex=False)
 plt.rc('font', family='serif')
 plt.rcParams.update(params)
+
+
+def create_noise(N, colored=False):        
+    if colored:
+        phi_0 = 1e-8  # amplitude of noise, aka stdPhaseNoise 
+        Delta_psi = 0.18 # the peak of the spectrum
+
+        psi_t_list = []
+        psi_t = 0
+
+        # parameters for ksi
+        mean = 0.0
+        std = 0.02
+        for i in range(N):
+            psi_t_list.append(psi_t)
+            ksi = np.random.normal(mean, std)  # different seed on each turn
+            psi_t = psi_t + 2 * np.pi * Delta_psi + 2 * np.pi * ksi
+
+        # Construct the noise signal
+        y = phi_0 * np.cos(psi_t_list)
+        
+    else:
+        mu, stdPhaseNoise = 0, 1e-8
+        y = np.random.normal(mu, stdPhaseNoise, N)
+    
+    return y
+
+def compute_PSD(N, noise_flag):
+    time = np.arange(N) # convert from turns to time
+    Dt = time[1]-time[0] # sampling (s)
+    freq = np.linspace(0, N/time[-1], N)
+    Df = freq[1]-freq[0]
+    
+    #### To obtain a more precise value of PSD, we use the average of 10000 FFTs
+    fft_list = []
+    for i in range(1000):
+        y_noise = create_noise(N, noise_flag)
+        fft = np.fft.fft(y_noise)
+        fft_list.append(fft)
+        
+    mean_dft = np.mean(np.abs(fft_list)**2, axis=0)
+    PSD = mean_dft/(Df*N**2) # power spectral density
+    
+    
+    # compute the PSD at the frequency of interest. 
+    # In our case in the betatron frequency, vb. 
+    # find the closest value to the vb at the frequency list
+    vb = 0.18
+    closest_to_vb = freq[min(range(len(freq)), key=lambda i: abs(freq[i] - vb))] # Hz
+    PSD_vb_index = [i for i in range(len(freq)) if freq[i] == closest_to_vb]
+    PSD_vb = PSD[PSD_vb_index] # rad^2/Hz or V^2/Hz
+    
+    
+    return PSD, freq, PSD_vb
+
 
 
 tbt_data = pickle.load(open('./output/tbt_ayy1e5.pkl', 'rb'))
@@ -117,56 +172,43 @@ ax.set_ylabel(r'$\rho (\nu_b)$')
 plt.show()
 plt.close()
 
+
+
+PSD_flaf = True
 ######################################################################################
-# Define the sampling parameters
-T = 1 # sampling rate
-N = 1000 # number of turns
-f = np.linspace(0, 1/T, N)
+if PSD_flag:
+    T = 1 # sampling rate
+    N = 1000 # number of turns
+    f = np.linspace(0, 1/T, N)
 
-# A. Noise parameters
-phi_0 = 1e-8 # amplitude of noise
-Delta_psi = 0.18 # the peak of the spectrum
-print('peaked noise at {}'.format(Delta_psi))
-# B. Parameters for ksi 
-mean = 0.0
-std = 0.02 # the rms width of the noise spectrum 
-psi_t = 0
-psi_t_list = [] # list to append the phase of the noise signal
-# C. create the phase of the noise signal
-for i in range(0, N):
-    psi_t_list.append(psi_t)
-    ksi = np.random.normal(mean, std) # different seed on each turn
-    psi_t = psi_t + 2*np.pi*Delta_psi + 2*np.pi*ksi
+    PSD, freq, PSD_vb = compute_PSD(N, True)
 
 
-# D. Construct the noise signal
-noiseKicks = phi_0*np.cos(psi_t_list)
-# E. Obtain the spectrum of the noise signall
-fft = np.fft.fft(noiseKicks)
+    fig, ax1 = plt.subplots()
 
-fig, ax1 = plt.subplots()
+    ax1 = data.plot(kind='hist', bins=50, color='C1', normed=True, alpha=0.5, label='Tune distribution, \n'+r'$\sigma=0.0014$', legend=True)#, ax=ax)
+    dataXlim = ax1.get_xlim()
 
-#ax1 = pdf.plot(lw=2, label='PDF', legend=True)
-ax1 = data.plot(kind='hist', bins=50, color='C1', normed=True, alpha=0.5, label='Data', legend=True)#, ax=ax)
-
-ax2 = ax1.twinx() # instantiate a second axes that shares the same x-axis
-ax2.plot(f[:N // 2], np.abs(fft)[:N // 2] * 1 / N, color='k')#, label=i) # 1 / N is a normalization factor
-ax2.set_ylim(0.0, 1e-8)
-ax2.set_ylabel('Noise amplitude (arbitrary units)')
+    ax2 = ax1.twinx() # instantiate a second axes that shares the same x-axis
+    ax2.plot(f[:N // 2], PSD[:N//2] * 1 / N, color='k', label='Noise spectrum,'+'\n rms('+r'$\xi$'+')/2'+r'$\pi$=0.02')#, label=i) # 1 / N is a normalization factor
+    ax2.set_ylim(0.0, 2e-17)
+    ax2.set_ylabel('S'+ r'$_{\Delta \phi}$'+ '(rad'+r'$^2$'+'/Hz)')
 
 
-param_names = (best_dist.shapes + ', loc, scale').split(', ') if best_dist.shapes else ['loc', 'scale']
-param_str = ', '.join(['{}={:.3f}'.format(k,v) for k,v in zip(param_names, best_fit_params)])
-dist_str = '{}({})'.format(best_fit_name, param_str)
+    param_names = (best_dist.shapes + ', loc, scale').split(', ') if best_dist.shapes else ['loc', 'scale']
+    param_str = ', '.join(['{}={:.3f}'.format(k,v) for k,v in zip(param_names, best_fit_params)])
+    dist_str = '{}({})'.format(best_fit_name, param_str)
 
-ax1.set_xlim(0.0, 0.5)
-ax1.set_title('Best fit distribution \n {} \n mean={:.3f}, sigma={:.5f}'.format(dist_str, mean, np.sqrt(var) ))
+    ax1.set_xlim(0.17, 0.21)
+    #ax1.set_title('Best fit distribution \n {} \n mean={:.3f}, sigma={:.5f}'.format(dist_str, mean, np.sqrt(var) ))
 
-#ax.set_title('Best fit distribution:{} \n mu={:.3f}, sigma={:.5f}'.format(best_fit_name, mean, np.sqrt(var)))
-ax1.set_xlabel('Betatron tune')
-ax1.set_ylabel(r'$\rho (\nu_b)$')
-#plt.savefig('tune_distribution_ayy5e3.png')
-plt.show()
+    #ax.set_title('Best fit distribution:{} \n mu={:.3f}, sigma={:.5f}'.format(best_fit_name, mean, np.sqrt(var)))
+    ax1.set_xlabel('Betatron tune, '+r'$Q_y$')
+    ax1.set_ylabel(r'$\rho (Q_y)$')
+    plt.legend(loc=2)
+    plt.tight_layout()
+    #plt.savefig('tune_distribution_ayy1e5_ColoredNoiseAtQy_rmsKsi2e-2_PSD.png')
+    plt.show()
 
 
 
