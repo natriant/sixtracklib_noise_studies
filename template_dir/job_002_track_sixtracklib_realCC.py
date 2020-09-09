@@ -11,14 +11,13 @@ from lib.EmittanceCalculation import calculate_emittances
 import simulation_parameters as pp
 from pysixtrack.particles import Particles
 
-###### flags for choos the type of noise ################
-phase_noise = True
-amplitude_noise = False
+###### flags for the type of noise ################
+noise_type = 'PN' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
 
 white_noise = True
 peaked_noise = False  # for now available only for phase noise
 
-create_noise_kicks = False # False: to load noise kicks from file
+create_noise_kicks = True # False: to load noise kicks from file
 
 # for now noise only in CC2
 ##### create the noise #########
@@ -26,7 +25,7 @@ create_noise_kicks = False # False: to load noise kicks from file
 if white_noise:
     if create_noise_kicks:
         print('white noise, create kicks')
-        stdNoise = 1e-8
+        stdNoise = 0.5e-8
         noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
     else:        
         print('white noise, load kicks from file')
@@ -108,11 +107,16 @@ if pp.track_with == 'sixtracklib':
         cravity1.set_ksl(pp.cravity1_ks0L_from_turn(turn), 0)
         cravity1.set_ps(pp.cravity1_phase, 0)
 
-        if amplitude_noise:
+
+        if noise_type == 'AN':
             cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1], 0)
             cravity2.set_ps(pp.cravity2_phase, 0)
-        if phase_noise:
+        if noise_type == 'PN':
             cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn), 0)
+            rad2deg=180./np.pi # convert rad to degrees
+            cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+        if noise_type == 'BOTH':
+            cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1], 0)
             rad2deg=180./np.pi # convert rad to degrees
             cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
 
@@ -159,14 +163,13 @@ if pp.track_with == 'sixtracklib':
                 turn, pp.n_turns_max, int(100*(turn+1)/pp.n_turns_max)) )
             with open(pp.output_dir + 'tbt.pkl', 'wb') as fid:
                 pickle.dump(tbt_dict, fid)
-            fid.close() # close the file so you can post process while the simulation is running
-
+            fid.close()
+            
     t_stop = datetime.datetime.now()
     (t_stop-t_start).total_seconds()
     simulation_info = {'n_turns': turn, 
                        'n_macroparticles': pp.n_macroparticles, 
-                       'AmplitudeNoise': amplitude_noise,
-                       'PhaseNoise': phase_noise,
+                       'NoiseType': noise_type,
                        'WhiteNoise': white_noise,
                        'CreateNoiseKicks': create_noise_kicks,
                        'PeakedNoise': peaked_noise,
