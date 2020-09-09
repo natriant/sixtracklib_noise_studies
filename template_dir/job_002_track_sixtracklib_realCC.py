@@ -159,6 +159,7 @@ if pp.track_with == 'sixtracklib':
                 turn, pp.n_turns_max, int(100*(turn+1)/pp.n_turns_max)) )
             with open(pp.output_dir + 'tbt.pkl', 'wb') as fid:
                 pickle.dump(tbt_dict, fid)
+            fid.close() # close the file so you can post process while the simulation is running
 
     t_stop = datetime.datetime.now()
     (t_stop-t_start).total_seconds()
