@@ -12,7 +12,7 @@ import simulation_parameters as pp
 from pysixtrack.particles import Particles
 
 ###### flags for the type of noise ################
-noise_type = 'PN' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
+noise_type = 'BOTH' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
 
 white_noise = True
 peaked_noise = False  # for now available only for phase noise
@@ -24,9 +24,17 @@ create_noise_kicks = True # False: to load noise kicks from file
 
 if white_noise:
     if create_noise_kicks:
-        print('white noise, create kicks')
-        stdNoise = 0.5e-8
-        noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
+
+        if noise_type == 'BOTH':
+            print('white noise, AN+BN')
+            stdNoise_AN = 0.5e-8
+            stdNoise_PN = 3e-8
+            noiseKicks_AN = np.random.normal(0, stdNoise_AN, pp.n_turns_max)
+            noiseKicks_PN = np.random.normal(0, stdNoise_PN, pp.n_turns_max)
+        else:
+            print('white noise, create kicks')
+            stdNoise = 0.5e-8
+            noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
     else:        
         print('white noise, load kicks from file')
         path_to_data = '/home/natriant/sixtracklib_cc_test/sixtracklib_template_directory/my_template_dir/' #path to the kicks' file
@@ -116,9 +124,9 @@ if pp.track_with == 'sixtracklib':
             rad2deg=180./np.pi # convert rad to degrees
             cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
         if noise_type == 'BOTH':
-            cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1], 0)
+            cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_AN[turn-1], 0)
             rad2deg=180./np.pi # convert rad to degrees
-            cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+            cravity2.set_ps(pp.cravity2_phase+noiseKicks_PN[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
 
         job.push_beam_elements()
 
