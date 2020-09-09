@@ -18,13 +18,24 @@ amplitude_noise = False
 white_noise = True
 peaked_noise = False  # for now available only for phase noise
 
+create_noise_kicks = False # False: to load noise kicks from file
+
 # for now noise only in CC2
 ##### create the noise #########
 
 if white_noise:
-    print('white noise')
-    stdNoise = 1e-8
-    noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
+    if create_noise_kicks:
+        print('white noise, create kicks')
+        stdNoise = 1e-8
+        noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
+    else:        
+        print('white noise, load kicks from file')
+        path_to_data = '/home/natriant/sixtracklib_cc_test/sixtracklib_template_directory/my_template_dir/' #path to the kicks' file
+    
+        with open(path_to_data+'noiseKicks_realSpectrum_forSixtracklib/PN_4.pkl', 'rb') as f:
+            noiseKicks = pickle.load(f)
+            noiseKicks = np.array(noiseKicks)
+            print(len(noiseKicks))
 
 if peaked_noise: # only phase noise for now  
     # A. Noise parameters
@@ -33,7 +44,7 @@ if peaked_noise: # only phase noise for now
     print('peaked noise at {}'.format(Delta_psi))
     # B. Parameters for ksi 
     mean = 0.0
-    std = 0.02 # the rms width of the noise spectrum 
+    std = 0.04 # the rms width of the noise spectrum 
     psi_t = 0
     psi_t_list = [] # list to append the phase of the noise signal
     # C. create the phase of the noise signal
@@ -156,6 +167,7 @@ if pp.track_with == 'sixtracklib':
                        'AmplitudeNoise': amplitude_noise,
                        'PhaseNoise': phase_noise,
                        'WhiteNoise': white_noise,
+                       'CreateNoiseKicks': create_noise_kicks,
                        'PeakedNoise': peaked_noise,
                        'simulation_time_in_seconds': (t_stop-t_start).total_seconds()}
     with open(pp.output_dir + 'simulation_info.pkl', 'wb') as fid:

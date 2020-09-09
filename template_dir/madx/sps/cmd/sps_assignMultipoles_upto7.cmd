@@ -1,4 +1,3 @@
-
 option,echo,warn;
 
 AssignMultipoles : macro = {
