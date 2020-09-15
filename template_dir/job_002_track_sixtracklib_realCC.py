@@ -26,13 +26,13 @@ if white_noise:
     if create_noise_kicks:
 
         if noise_type == 'BOTH':
-            print('white noise, AN+BN')
+            print('white noise, AN+PN')
             stdNoise_AN = 0.5e-8
             stdNoise_PN = 3e-8
             noiseKicks_AN = np.random.normal(0, stdNoise_AN, pp.n_turns_max)
             noiseKicks_PN = np.random.normal(0, stdNoise_PN, pp.n_turns_max)
         else:
-            print('white noise, create kicks')
+            print('white noise, create kicks {}'.format(noise_type))
             stdNoise = 0.5e-8
             noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
     else:        
@@ -122,7 +122,10 @@ if pp.track_with == 'sixtracklib':
         if noise_type == 'PN':
             cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn), 0)
             rad2deg=180./np.pi # convert rad to degrees
-            cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+            if create_noise_kicks:
+                cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+            else:
+                cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*rad2deg, 0)
         if noise_type == 'BOTH':
             cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_AN[turn-1], 0)
             rad2deg=180./np.pi # convert rad to degrees
