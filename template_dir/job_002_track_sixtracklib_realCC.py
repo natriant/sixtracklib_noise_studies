@@ -12,12 +12,17 @@ import simulation_parameters as pp
 from pysixtrack.particles import Particles
 
 ###### flags for the type of noise ################
-noise_type = 'BOTH' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
+noise_type = 'PN' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
 
-white_noise = True
+white_noise = False
 peaked_noise = False  # for now available only for phase noise
+measured_noise = True
 
-create_noise_kicks = True # False: to load noise kicks from file
+create_noise_kicks = False # False: to load noise kicks from file
+
+# sanity control
+if measure_noise and create_noise_kicks:
+    quit()
 
 # for now noise only in CC2
 ##### create the noise #########
@@ -43,6 +48,15 @@ if white_noise:
             noiseKicks = pickle.load(f)
             noiseKicks = np.array(noiseKicks)
             print(len(noiseKicks))
+
+if measured_noise:
+    # only option is to load the kicks from file
+    path_to_data = '/home/natriant/sixtracklib_cc_test/sixtracklib_template_directory/my_template_dir/' #path to the kicks' file
+    with open(path_to_data+'PN_realNoise_v3.pkl', 'rb') as f:
+        noiseKicks = pickle.load(f)
+        noiseKicks = np.array(noiseKicks)
+        print(len(noiseKicks))
+
 
 if peaked_noise: # only phase noise for now  
     # A. Noise parameters
@@ -122,10 +136,11 @@ if pp.track_with == 'sixtracklib':
         if noise_type == 'PN':
             cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn), 0)
             rad2deg=180./np.pi # convert rad to degrees
-            if create_noise_kicks:
-                cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
-            else:
+            if measured_noise: # no scaling factor in the phase
                 cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*rad2deg, 0)
+            else:
+                cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+                
         if noise_type == 'BOTH':
             cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_AN[turn-1], 0)
             rad2deg=180./np.pi # convert rad to degrees
