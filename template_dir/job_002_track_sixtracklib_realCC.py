@@ -21,7 +21,7 @@ measured_noise = True
 create_noise_kicks = False # False: to load noise kicks from file
 
 # sanity control
-if measure_noise and create_noise_kicks:
+if measured_noise and create_noise_kicks:
     quit()
 
 # for now noise only in CC2
