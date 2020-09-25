@@ -37,8 +37,12 @@ mad.input('exec, SPS_matchtunes(QH, QV);')
 mad.input('exec, SPS_setchroma_Q26(QPH, QPV);')
 mad.input('acta.31637, harmon=%d;'%pp.harmonic_number)
 mad.input('exec, match_chroma(QPH ,QPV);')
-# Octupole matching
-mad.input('exec, match_octupoles(ayy_val, axy_val);')
+# Power the octupoles
+#mad.input('exec, match_octupoles(ayy_val, axy_val);') # use this line, if the input is the ayy, axy coefficients and then matching to klof, klod
+mad.input('klof=1.0;')
+mad.input('klod=1.0;')
+mad.call('./ptc/PTC.macro')
+mad.input('exec, PTCchroma;') # obtain the values of the detuning coefficients
 # twiss
 twtable = mad.twiss()
 
