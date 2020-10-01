@@ -10,7 +10,7 @@ Z:=1;
 A:=1;
 TBUNCH:=1.0e-9;
 
-Beam, particle = proton, pc = 26.0,exn=3.0E-6*4.0,eyn=3.0E-6*4.0,
+Beam, particle = proton, pc = 270.0,exn=3.0E-6*4.0,eyn=3.0E-6*4.0,
 sige=1.07e-3, sigt=TBUNCH*CLIGHT*(BEAM->PC/BEAM->ENERGY), NPART=1.3E11, BUNCHED;
 
 
