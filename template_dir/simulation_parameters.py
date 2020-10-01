@@ -21,7 +21,7 @@ seq_name = 'sps'
 mass = Particles.pmass
 p0c = 269.99e9 #25.92e9
 harmonic_number = 4620
-V_RF = 2.37*1e6 #2.0*1e6
+V_RF = 5.088*1e6 #2.37*1e6
 lag_RF_deg = 180.
 
 bunchlength_rms = 1.55e-3 #0.155 #1.55e-3 #0.22 # meters
