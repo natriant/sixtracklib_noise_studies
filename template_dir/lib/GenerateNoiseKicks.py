@@ -13,7 +13,7 @@ def rad2sec(my_rad, my_f_rf):
 
 def modulated_rf_phase(my_A_sec, my_mod_period_s, my_f_rf, my_turns_max, my_f_rev):
     # returns the signal of the modulated RF, here the CC. The amplitude in rad
-    A_rad = seconds2ad(my_A_sec, my_f_rf)  # amplitude of the RF modulation in rad
+    A_rad = seconds2rad(my_A_sec, my_f_rf)  # amplitude of the RF modulation in rad
     mod_freq_Hz = 1 / my_mod_period_s  # frequency of the RF phase modulation in Hz
 
     turns = np.arange(my_turns_max)
