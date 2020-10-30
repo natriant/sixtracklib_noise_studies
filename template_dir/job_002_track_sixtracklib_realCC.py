@@ -12,7 +12,7 @@ import simulation_parameters as pp
 from pysixtrack.particles import Particles
 
 ###### flags for the type of noise ################
-noise_type = 'PN' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
+noise_type = 'BOTH' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
 
 white_noise = False
 peaked_noise = False  # for now available only for phase noise
@@ -38,8 +38,9 @@ if white_noise:
             noiseKicks_PN = np.random.normal(0, stdNoise_PN, pp.n_turns_max)
         else:
             print('white noise, create kicks {}'.format(noise_type))
-            stdNoise = 0.5e-8
+            stdNoise = 1e-8
             noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
+
     else:        
         print('white noise, load kicks from file')
         path_to_data = '/home/natriant/sixtracklib_cc_test/sixtracklib_template_directory/my_template_dir/' #path to the kicks' file
@@ -51,11 +52,22 @@ if white_noise:
 
 if measured_noise:
     # only option is to load the kicks from file
-    path_to_data = '/home/natriant/sixtracklib_cc_test/sixtracklib_template_directory/my_template_dir/' #path to the kicks' file
-    with open(path_to_data+'PN_realNoise_v3.pkl', 'rb') as f:
-        noiseKicks = pickle.load(f)
-        noiseKicks = np.array(noiseKicks)
-        print(len(noiseKicks))
+    path_to_data = '/home/natriant/sixtracklib_cc_test/' #path to the kicks' file
+    if noise_type == 'AN' or noise_type == 'PN':
+        with open(path_to_data+'%path'+'/{}_realNoise_v{}.pkl'.format(noise_type, %run), 'rb') as f: # or AN_realNoise_v{} for amplitude noise
+            noiseKicks = pickle.load(f)
+            noiseKicks = np.array(noiseKicks)
+            print(len(noiseKicks))
+
+    if noise_type == 'BOTH':
+        with open(path_to_data+'%path'+'/PN_realNoise_v{}.pkl'.format(%run), 'rb') as f: # or AN_realNoise_v{} for amplitude noise
+            noiseKicks_pn = pickle.load(f)
+            noiseKicks_pn = np.array(noiseKicks_pn)
+            print(len(noiseKicks_pn))
+        with open(path_to_data+'%path'+'/AN_realNoise_v{}.pkl'.format(%run), 'rb') as f: # or AN_realNoise_v{} forcoast4exc-0dbmAM.csv amplitude noise
+            noiseKicks_an = pickle.load(f)
+            noiseKicks_an = np.array(noiseKicks_an)
+            print(len(noiseKicks_an))
 
 
 if peaked_noise: # only phase noise for now  
@@ -92,8 +104,9 @@ elements.append_line(line)
 n_part = pp.n_macroparticles
 circumference = line.get_length()
 
-#tbt_dict = {'turn':[], 'time':[], 'intensity':[], 'neps_x':[], 'neps_y':[],
-#            'x': [], 'px':[], 'y': [], 'py': [], 'sigma': [], 'delta': []}
+# directory to save the final distribution
+parts_distribution_dict = {'x': [], 'px':[], 'y': [], 'py': [], 'sigma': [], 'delta': []}
+# directory to save the tbt emittances
 tbt_dict = {'turn':[], 'time':[], 'intensity':[], 'neps_x':[], 'neps_y':[], 'std_sigma':[]}
 
 time_cum = 0
@@ -131,8 +144,12 @@ if pp.track_with == 'sixtracklib':
 
 
         if noise_type == 'AN':
-            cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1], 0)
-            cravity2.set_ps(pp.cravity2_phase, 0)
+            if measured_noise:
+                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1]*pp.cravity2_voltage/pp.p0c, 0)
+                cravity2.set_ps(pp.cravity2_phase, 0)
+            else:
+                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1], 0)
+                cravity2.set_ps(pp.cravity2_phase, 0)
         if noise_type == 'PN':
             cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn), 0)
             rad2deg=180./np.pi # convert rad to degrees
@@ -142,9 +159,13 @@ if pp.track_with == 'sixtracklib':
                 cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
                 
         if noise_type == 'BOTH':
-            cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_AN[turn-1], 0)
             rad2deg=180./np.pi # convert rad to degrees
-            cravity2.set_ps(pp.cravity2_phase+noiseKicks_PN[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+            if measured_noise:
+                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_an[turn-1]*pp.cravity2_voltage/pp.p0c, 0)
+                cravity2.set_ps(pp.cravity2_phase+noiseKicks_pn[turn-1]*rad2deg, 0)
+            else:
+                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_AN[turn-1], 0)
+                cravity2.set_ps(pp.cravity2_phase+noiseKicks_PN[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
 
         job.push_beam_elements()
 
@@ -177,12 +198,7 @@ if pp.track_with == 'sixtracklib':
         '''
         For long tracking the tbt coordinates are not damped due to large volume of the file, which results to long running time.
         '''
-        #tbt_dict['x'].append(x)
-        #tbt_dict['y'].append(y)
-        #tbt_dict['px'].append(px)
-        #tbt_dict['py'].append(py)
-        #tbt_dict['sigma'].append(sigma)
-        #tbt_dict['delta'].append(delta)
+
 
         if turn in pp.turns_to_print or turn == pp.n_turns_max:       
             print('%s: completed turn %d of %d (%d%%)'%(str(datetime.datetime.now())[:-7], 
@@ -190,7 +206,21 @@ if pp.track_with == 'sixtracklib':
             with open(pp.output_dir + 'tbt.pkl', 'wb') as fid:
                 pickle.dump(tbt_dict, fid)
             fid.close()
-            
+
+
+        if turn == pp.n_turns_max: # save the final distribution
+            parts_distribution_dict['x'].append(x)
+            parts_distribution_dict['y'].append(y)
+            parts_distribution_dict['px'].append(px)
+            parts_distribution_dict['py'].append(py)
+            parts_distribution_dict['sigma'].append(sigma)
+            parts_distribution_dict['delta'].append(delta)
+
+            with open(pp.output_dir + 'final_distribution.pkl', 'wb') as ff:
+                pickle.dump(parts_distribution_dict, ff)
+            ff.close()
+
+
     t_stop = datetime.datetime.now()
     (t_stop-t_start).total_seconds()
     simulation_info = {'n_turns': turn, 
