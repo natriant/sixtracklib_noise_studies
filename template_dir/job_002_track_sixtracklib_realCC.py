@@ -11,82 +11,6 @@ from lib.EmittanceCalculation import calculate_emittances
 import simulation_parameters as pp
 from pysixtrack.particles import Particles
 
-###### flags for the type of noise ################
-noise_type = 'BOTH' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
-
-white_noise = False
-peaked_noise = False  # for now available only for phase noise
-measured_noise = True
-
-create_noise_kicks = False # False: to load noise kicks from file
-
-# sanity control
-if measured_noise and create_noise_kicks:
-    quit()
-
-# for now noise only in CC2
-##### create the noise #########
-
-if white_noise:
-    if create_noise_kicks:
-
-        if noise_type == 'BOTH':
-            print('white noise, AN+PN')
-            stdNoise_AN = 0.5e-8
-            stdNoise_PN = 3e-8
-            noiseKicks_AN = np.random.normal(0, stdNoise_AN, pp.n_turns_max)
-            noiseKicks_PN = np.random.normal(0, stdNoise_PN, pp.n_turns_max)
-        else:
-            print('white noise, create kicks {}'.format(noise_type))
-            stdNoise = 1e-8
-            noiseKicks = np.random.normal(0, stdNoise, pp.n_turns_max)
-
-    else:        
-        print('white noise, load kicks from file')
-        path_to_data = '/home/natriant/sixtracklib_cc_test/sixtracklib_template_directory/my_template_dir/' #path to the kicks' file
-    
-        with open(path_to_data+'noiseKicks_realSpectrum_forSixtracklib/PN_4.pkl', 'rb') as f:
-            noiseKicks = pickle.load(f)
-            noiseKicks = np.array(noiseKicks)
-            print(len(noiseKicks))
-
-if measured_noise:
-    # only option is to load the kicks from file
-    path_to_data = '/home/natriant/sixtracklib_cc_test/' #path to the kicks' file
-    if noise_type == 'AN' or noise_type == 'PN':
-        with open(path_to_data+'%path'+'/{}_realNoise_v{}.pkl'.format(noise_type, %run), 'rb') as f: # or AN_realNoise_v{} for amplitude noise
-            noiseKicks = pickle.load(f)
-            noiseKicks = np.array(noiseKicks)
-            print(len(noiseKicks))
-
-    if noise_type == 'BOTH':
-        with open(path_to_data+'%path'+'/PN_realNoise_v{}.pkl'.format(%run), 'rb') as f: # or AN_realNoise_v{} for amplitude noise
-            noiseKicks_pn = pickle.load(f)
-            noiseKicks_pn = np.array(noiseKicks_pn)
-            print(len(noiseKicks_pn))
-        with open(path_to_data+'%path'+'/AN_realNoise_v{}.pkl'.format(%run), 'rb') as f: # or AN_realNoise_v{} forcoast4exc-0dbmAM.csv amplitude noise
-            noiseKicks_an = pickle.load(f)
-            noiseKicks_an = np.array(noiseKicks_an)
-            print(len(noiseKicks_an))
-
-
-if peaked_noise: # only phase noise for now  
-    # A. Noise parameters
-    phi_0 = 1e-8 # amplitude of noise
-    Delta_psi = 0.18 # the peak of the spectrum
-    print('peaked noise at {}'.format(Delta_psi))
-    # B. Parameters for ksi 
-    mean = 0.0
-    std = 0.04 # the rms width of the noise spectrum 
-    psi_t = 0
-    psi_t_list = [] # list to append the phase of the noise signal
-    # C. create the phase of the noise signal
-    for i in range(0, pp.n_turns_max):
-        psi_t_list.append(psi_t)
-        ksi = np.random.normal(mean, std) # different seed on each turn
-        psi_t = psi_t + 2*np.pi*Delta_psi + 2*np.pi*ksi
-    # D. Construct the noise signal
-    noiseKicks = phi_0*np.cos(psi_t_list)
 
 #####################
 parser = ArgumentParser()
@@ -110,7 +34,6 @@ parts_distribution_dict = {'x': [], 'px':[], 'y': [], 'py': [], 'sigma': [], 'de
 tbt_dict = {'turn':[], 'time':[], 'intensity':[], 'neps_x':[], 'neps_y':[], 'std_sigma':[]}
 
 time_cum = 0
-
 
 if pp.track_with == 'sixtracklib':
 
@@ -139,33 +62,11 @@ if pp.track_with == 'sixtracklib':
     for turn in range(1, pp.n_turns_max+1):
         
         # Update elements 
-        cravity1.set_ksl(pp.cravity1_ks0L_from_turn(turn), 0)
-        cravity1.set_ps(pp.cravity1_phase, 0)
+        cravity1.set_ksl(pp.cravity1_ks0L_from_turn(turn-1), 0)
+        cravity1.set_ps(pp.cravity1_phase_from_turn(turn-1), 0)
 
-
-        if noise_type == 'AN':
-            if measured_noise:
-                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1]*pp.cravity2_voltage/pp.p0c, 0)
-                cravity2.set_ps(pp.cravity2_phase, 0)
-            else:
-                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks[turn-1], 0)
-                cravity2.set_ps(pp.cravity2_phase, 0)
-        if noise_type == 'PN':
-            cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn), 0)
-            rad2deg=180./np.pi # convert rad to degrees
-            if measured_noise: # no scaling factor in the phase
-                cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*rad2deg, 0)
-            else:
-                cravity2.set_ps(pp.cravity2_phase+noiseKicks[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
-                
-        if noise_type == 'BOTH':
-            rad2deg=180./np.pi # convert rad to degrees
-            if measured_noise:
-                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_an[turn-1]*pp.cravity2_voltage/pp.p0c, 0)
-                cravity2.set_ps(pp.cravity2_phase+noiseKicks_pn[turn-1]*rad2deg, 0)
-            else:
-                cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn)+noiseKicks_AN[turn-1], 0)
-                cravity2.set_ps(pp.cravity2_phase+noiseKicks_PN[turn-1]*pp.p0c*rad2deg/pp.cravity2_voltage, 0)
+        cravity2.set_ksl(pp.cravity2_ks0L_from_turn(turn-1), 0)
+        cravity2.set_ps(pp.cravity2_phase_from_turn(turn-1), 0)
 
         job.push_beam_elements()
 
@@ -196,7 +97,7 @@ if pp.track_with == 'sixtracklib':
         tbt_dict['intensity'].append(intensity)
         tbt_dict['std_sigma'].append(np.std(sigma))
         '''
-        For long tracking the tbt coordinates are not damped due to large volume of the file, which results to long running time.
+        For long tracking the tbt coordinates are not dumped due to large volume of the file, which results to long running time.
         '''
 
 
@@ -225,10 +126,7 @@ if pp.track_with == 'sixtracklib':
     (t_stop-t_start).total_seconds()
     simulation_info = {'n_turns': turn, 
                        'n_macroparticles': pp.n_macroparticles, 
-                       'NoiseType': noise_type,
-                       'WhiteNoise': white_noise,
-                       'CreateNoiseKicks': create_noise_kicks,
-                       'PeakedNoise': peaked_noise,
+                       'NoiseType': pp.noise_type,
                        'simulation_time_in_seconds': (t_stop-t_start).total_seconds()}
     with open(pp.output_dir + 'simulation_info.pkl', 'wb') as fid:
             pickle.dump(simulation_info, fid)
