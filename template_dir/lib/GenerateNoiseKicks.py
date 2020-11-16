@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def seconds2rad(my_t, my_f_rf):
     phi = my_t*2*np.pi*my_f_rf
     return phi
@@ -23,4 +22,8 @@ def modulated_rf_phase(my_A_sec, my_mod_period_s, my_f_rf, my_turns_max, my_f_re
     my_signal = A_rad*np.sin(2*np.pi*mod_freq_Hz*time)
     return my_signal
 
+def white_noise(my_stdNoise, my_turns_max):
+    # stdNoise in rad^2/Hz or 1/Hz
+    myKicks = np.random.normal(0, my_stdNoise, my_turns_max)
+    return myKicks
 

@@ -3,6 +3,8 @@ import pickle
 
 from pysixtrack.particles import Particles
 
+from lib.GenerateNoiseKicks import *
+
 
 input_dir = './input/'
 output_dir = './output/'
@@ -55,13 +57,22 @@ cravity2_voltage = 1e6 #1e6 # [V]
 cravity2_phase = 0. * np.ones(n_turns_max)  # 270. when two CCs are ON operating in opposite phase 
 
 ###### flags for the type of noise ################
-rad2deg=180./np.pi
+rad2deg=180./np.pi # In Sixtracklib phase is set in deg
 noise_type = 'PN' # 'AN', 'BOTH', PN: Phase noise, AN: Amplitude, BOTH: AN+PN
-from lib.GenerateNoiseKicks import modulated_rf_phase
+
+# White noise kicks or colored noise
+#stdNoise = 1e-8 # fix it rad^2/Hz or V/Hz
+#noiseKicks = white_noise(stdNoise, n_turns_max) # rad for PN or 1 for AN
+#assert len(noiseKicks) == n_turns_max
+#if noise_type == 'PN':
+#    cravity2_phase += rad2deg*noiseKicks
+#if noise_type = 'AN':
+
+    
 # Load the phase noise kicks sequence generated from Coast3-Setting3
 path_to_data = '.' #path to the kicks' file
 with open(path_to_data+'/{}_realNoise_v1.pkl'.format(noise_type), 'rb') as f:
-    noiseKicks = rad2deg*np.array(pickle.load(f))[:n_turns_max]  # in rad
+    noiseKicks = rad2deg*np.array(pickle.load(f))[:n_turns_max]  # in deg
     assert len(noiseKicks) == n_turns_max
 cravity2_phase += noiseKicks
 
