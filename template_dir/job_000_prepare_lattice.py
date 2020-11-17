@@ -27,7 +27,7 @@ mad.use(pp.seq_name)
 
 # Include b3b5b7 in MBA and MBB
 mad.call('./sps/cmd/sps_setMultipoles_upto7.cmd')
-mad.input('exec, set_Multipoles;')
+mad.input('exec, set_Multipoles_270GeV;')
 mad.call('./sps/cmd/sps_assignMultipoles_upto7.cmd')
 mad.input('exec, AssignMultipoles;')
 
@@ -37,6 +37,7 @@ pysixtrack_elements = pysixtrack.Line.from_madx_sequence(mad.sequence.sps, exact
 pysixtrack_elements.apply_madx_errors(errors)
 print(f'MBA after multiple errors: {pysixtrack_elements.elements[47].knl}')
 
+
 # Tune and Chromaticity matching
 mad.call('./sps/cmd/sps_matching.cmd')
 mad.input('exec, SPS_matchtunes(QH, QV);')
@@ -44,12 +45,20 @@ mad.input('exec, SPS_setchroma_Q26(QPH, QPV);')
 mad.input('acta.31637, harmon=%d;'%pp.harmonic_number)
 mad.input('exec, match_chroma(QPH ,QPV);')
 
+# sanity check for correct implementation of multiple errors with PTC
+#mad.call('./sps/cmd/sps_ptc_QxQyvsdeltap.cmd')
+#mad.input('exec, plot_QxQyVSdeltap;')
+
+#quit()
 # Power the octupoles
 #mad.input('exec, match_octupoles(ayy_val, axy_val);') # use this line, if the input is the ayy, axy coefficients and then matching to klof, klod
 mad.input('klof=1.0;')
 mad.input('klod=1.0;')
-#mad.call('./ptc/PTC.macro')
-#mad.input('exec, PTCchroma;') # obtain the values of the detuning coefficients
+mad.call('./ptc/PTC.macro')
+mad.input('exec, PTCchroma;') # obtain the values of the detuning coefficients
+#mad.call('./sps/cmd/sps_ptc_QxQyvsdeltap.cmd')
+#mad.input('exec, plot_QxQyVSdeltap;')
+#quit()
 # twiss
 twtable = mad.twiss()
 

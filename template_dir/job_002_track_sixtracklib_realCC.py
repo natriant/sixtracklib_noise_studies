@@ -33,6 +33,9 @@ parts_distribution_dict = {'x': [], 'px':[], 'y': [], 'py': [], 'sigma': [], 'de
 # directory to save the tbt emittances
 tbt_dict = {'turn':[], 'time':[], 'intensity':[], 'neps_x':[], 'neps_y':[], 'std_sigma':[]}
 
+#tbt_dict = {'turn':[], 'time':[], 'x':[], 'px':[], 'y':[], 'py':[], 'sigma':[], 'delta':[]}
+
+
 time_cum = 0
 
 if pp.track_with == 'sixtracklib':
@@ -90,12 +93,14 @@ if pp.track_with == 'sixtracklib':
         neps_x, neps_y = calculate_emittances(x, px, y, py, sigma, delta, betagamma[0])
         n_mp_alive = len(indx_alive[0])
         intensity = pp.macro_size*n_mp_alive
+        
         tbt_dict['time'].append(time_cum)
         tbt_dict['turn'].append(turn)
         tbt_dict['neps_x'].append(neps_x)
         tbt_dict['neps_y'].append(neps_y)
         tbt_dict['intensity'].append(intensity)
         tbt_dict['std_sigma'].append(np.std(sigma))
+
         '''
         For long tracking the tbt coordinates are not dumped due to large volume of the file, which results to long running time.
         '''
