@@ -1,0 +1,153 @@
+ option, -echo;
+
+
+/***************************************************
+* YOU NEED TO RUN THIS SCRIPT IN AFS
+***************************************************/
+
+/***************************************************
+ * SPECIFY THE SPS BEAM CONFIGURATION, ENERGY and EMITTANCES
+ ***************************************************/
+ 
+ call, file = 'sps/beams/lhc_beam_injection.beamx';
+ !Beam, particle = proton, energy = 270.0, NPART=1.3E11, BUNCHED;
+/***************************************************
+ * files for SPS
+ ***************************************************/
+
+ call, file = '../sps/elements/sps.ele';
+ !call, file = '../sps/aperture/aperturedb_1.dbx';
+ !call, file = '../sps/aperture/aperturedb_2.dbx';
+ call, file = '../sps/sequence/sps.seq';
+ !call, file = '../sps/aperture/aperturedb_3.dbx';
+ call, file = '../sps/strength/SPS_Q20.str';
+ call, file = '../sps/strength/elements.str';
+ call, file = '../sps/cmd/sps_assignMultipoles_upto7.cmd';
+ call, file = '../sps/cmd/sps_matching.cmd';
+ option, echo;
+
+
+/***************************************************
+ * use
+ ***************************************************/
+
+ use, sequence=SPS;
+
+/***************************************************
+ * Build thin model
+ ***************************************************/ 
+ myvalue(xx,yy,zz): macro = {myval = table(xx,yy,zz);};
+
+
+ freq = 400;
+ CRAVITY.1 : RFMULTIPOLE, VOLT=0, FREQ=freq, TILT=0, KNL:={knl1_cravity1}, PNL:={pnl1_cravity1};
+ CRAVITY.2 : RFMULTIPOLE, VOLT=0, FREQ=freq, TILT=0, KNL:={knl1_cravity2}, PNL:={pnl1_cravity2};
+
+ ! install crab cavities
+ ! remove markers and instruments
+ USE, period=SPS, range=#S/#E;
+ select, flag=seqedit, class=instrument;
+ select, flag=seqedit, class=marker;
+ seqedit, sequence=SPS;
+	remove, element=BEGI.10010;		!zero length element
+	remove, element=VVFB.21801;		!zero length element
+	remove, element=VVFB.21877;		!zero length element
+	remove, element=QSPL.31809;		!zero length element
+	remove, element=VVFB.61801;		!zero length element
+	remove, element=QSPL.61809;		!zero length element
+	remove, element=VVFB.61877;		!zero length element
+	remove, element=selected;
+	install, element=CRAVITY.1, at=6312.7213;
+	install, element=CRAVITY.2, at=6313.3213;
+	flatten;
+ endedit;
+ USE, period=SPS, range=#S/#E;
+
+
+ ! START AT BWS51995 (original s=5243.0323)
+ mystart: marker;
+ SEQEDIT, sequence=SPS;
+	install, element=mystart, at=6312.7213;
+	flatten;
+	cycle,start=mystart;
+	remove, element=SPS$START;
+	remove, element=SPS$END;
+	flatten;
+ ENDEDIT;
+ USE, sequence=SPS;
+
+
+ ! make thin 
+ use, sequence=sps;
+ select, flag=makethin, slice=1, thick=false;
+ makethin, sequence=sps, style=teapot, makedipedge=true;
+ use, sequence=SPS;
+ twiss;
+
+
+ b3a=-2.8e-03;! +/- 5.7e-04
+ b3b=1.6e-03;! +/- 3.2e-04
+
+ b5a=-7.9e+00;! +/- 5.4e-01
+ b5b=-6.8e+00;! +/- 1.5e+00
+
+ b7a=8.8e+04;! +/- 2.6e+04
+ b7b=1.7e+05;! +/- 0.8e+05
+ b3ar=b3a*0.25;
+ b3br=b3b*0.25;
+
+ b5ar=b5a*0.25;
+ b5br=b5b*0.25;
+
+ b7ar=b7a*0.25;
+ b7br=b7b*0.25;
+
+ exec, AssignMultipoles;
+
+
+
+ ! match tunes
+ match, sequence=sps;
+ vary, name=kqd, step=1e-8;
+ vary, name=kqf1, step=1e-8;
+ global, q1=26.13, q2=26.18;
+ jacobian,calls=1000,tolerance=1e-12;
+ endmatch;
+
+ exec, SPS_setchroma_Q26(QPH, QPV);
+ ! match chromaticity
+ match, sequence=sps;
+ vary, name=QPH;
+ vary, name=QPV;
+ global, dq1=2.0, dq2=2.0;
+ lmdif, calls=1000, tolerance=1e-20;
+ endmatch;
+ twiss;
+
+ call, file='PTC.macro';
+ !exec, PTCchroma;
+
+ create, table=PTCchroma, column=dp,Qx0,Qy0;
+
+ dpmax=0.8e-2; !10e-3; !0.6e-2; !10e-3; !0.7e-2;
+ nmax=10;
+ n=-nmax;
+ dp:=dpmax*n/nmax;
+ !i could have set up the dpmin instead. If I don't, the way the loop is set, it will go from -dpmax to +dpmax
+ while (n <= nmax)!I could do while dp<blah then...
+ {
+         value, dp,Qx0,Qy0;
+          exec, PTCtunes;
+         fill, table=PTCchroma;
+
+         n=n+1;
+ };
+
+ write, table=PTCchroma;
+
+ plot, table=PTCchroma, haxis=dp,hmin=-1.0e-2,hmax=1.0e-2, vaxis=qx0,qy0, vmin=0.08,vmax=0.24 title='PTC - nonlinear chromaticity - dpmax0.8e-2',noversion=true, file=nonlinear_chroma_sps_multipoles;
+
+ select,flag=twiss,column=name,s,x,y,mux,betx,alfx,muy,bety,alfy,dx,dy,k2l;
+ twiss, save, centre, file=twiss.tfs;
+option, -warn;
+save, sequence=sps, beam=true, file=sps_thin.seq;

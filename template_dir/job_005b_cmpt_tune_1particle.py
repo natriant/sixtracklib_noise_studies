@@ -6,14 +6,15 @@ import pickle
 import numpy as np
 import NAFFlib as pnf
 import matplotlib.pyplot as plt
+import pandas as pd
 
-deltas = np.linspace(-8e-3, 8e-3, 10)
+deltas = np.linspace(-8e-3, 8e-3, 20)
 
 Qx_list = []
 Qy_list = []
 
 for i in deltas:
-    my_dict = pickle.load( open('./output/tbt_{}.pkl'.format(i), 'rb'))
+    my_dict = pickle.load( open('./output/tbt{}.pkl'.format(i), 'rb'))
     x_data = []
     y_data = []
     for turn in range(len(my_dict['x'])):
@@ -27,53 +28,11 @@ for i in deltas:
     Qx_list.append(pnf.get_tune(np.array(signal_x)))
     Qy_list.append(pnf.get_tune(np.array(signal_y)))
 
-# Plot the expected chroma
-qpx = qpy = 2
-qx0 = 0.13
-qy0 = 0.18
-expected_x = qpx*deltas + qx0
-expected_y = qpy*deltas + qy0
+# dictionary of lists
+my_dict = {'dp':list(deltas) , 'Qx': Qx_list, 'Qy': Qy_list}   
+df = pd.DataFrame(my_dict)  
+    
+# saving the dataframe  
+df.to_csv('tracking_dp_QxQy.csv')
 
-# H plane
-fig, ax = plt.subplots()
-ax.plot(deltas, Qx_list, '.-', c='C0', label='simulation')
-ax.plot(deltas, expected_x, '--', c='r', label='analytical')
-ax.tick_params(axis='both', which='major', labelsize=15)
-ax.tick_params(axis='both', which='minor', labelsize=10)
-plt.ylabel('Qχ', fontsize=15)
-plt.xlabel('dp/p', fontsize=15)
-plt.legend()
-plt.grid()
-plt.tight_layout()
-#plt.savefig('./output/Qx_vs_dpp.png')
-plt.show()
-
-
-# V plane
-fig, ax = plt.subplots()
-ax.plot(deltas, Qy_list, '.-', c='C1', label='simulation')
-ax.plot(deltas, expected_y, '--', c='r', label='analytical')
-ax.tick_params(axis='both', which='major', labelsize=15)
-ax.tick_params(axis='both', which='minor', labelsize=10)
-plt.ylabel('Qy', fontsize=15)
-plt.xlabel('dp/p', fontsize=15)
-plt.legend()
-plt.grid()
-plt.tight_layout()
-#plt.savefig('./output/Qy_vs_dpp.png')
-plt.show()
-
-
-# Qx vs Qy
-fig, ax = plt.subplots()
-ax.plot(Qx_list, Qy_list, '.-', c='C1', label='simulation')
-ax.tick_params(axis='both', which='major', labelsize=15)
-ax.tick_params(axis='both', which='minor', labelsize=10)
-plt.ylabel('Qy', fontsize=15)
-plt.xlabel('Qx', fontsize=15)
-plt.legend()
-plt.grid()
-plt.tight_layout()
-#plt.savefig('./output/Qy_vs_dpp.png')
-plt.show()
 
