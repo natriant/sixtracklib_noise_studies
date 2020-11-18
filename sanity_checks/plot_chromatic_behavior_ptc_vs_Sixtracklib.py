@@ -22,8 +22,9 @@ plt.rc('text', usetex=False)
 plt.rc('font', family='serif')
 plt.rcParams.update(params)
 
-ptc_data = pd.read_csv('sps_ptc_QpxQpy5e-1_noklofklod_b3b5b7.csv')
-sixtracklib_data = pd.read_csv('sixtracklib_sps_QpxQpy5e-1_noklofklod_b3b5b7.csv')
+ptc_data = pd.read_csv('sps_ptc_QpxQpy5e-1_noklofklod_nob3b5b7.csv')
+sixtracklib_data = pd.read_csv('sixtracklib_sps_QpxQpy5e-1_noklofklod_nob3b5b7.csv')
+
 print(ptc_data.keys())
 print(sixtracklib_data.keys())
 
@@ -40,15 +41,15 @@ ax.plot(np.arange(-1, -0.5), np.arange(-1, -0.5), '-', linewidth=3, c='C0', labe
 ax.plot(np.arange(-1, -0.5), np.arange(-1, -0.5), '-', linewidth=3, c='C1', label='Qy')
 # set axis limits
 ax.set_xlim(-9e-3, 9e-3)
-ax.set_ylim(0.05, 0.21)
+ax.set_ylim(0.05, 0.22)
 
 # set labels
 ax.set_xlabel('dp/p [1]')
 ax.set_ylabel(r'$\mathrm{Q_x,Q_y}$')
 ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3))
 ax.grid(linestyle='--')
-plt.legend(loc=7)
+plt.legend(loc=4)
 
 plt.tight_layout()
-#plt.savefig('sps_270GeV_QpyQpx5e-1_noklofklod_b3b5b7_PTCvsSixtracklib.png')
+#plt.savefig('sps_270GeV_QpyQpx5e-1_noklofklod_nob3b5b7_PTCvsSixtracklib.png')
 plt.show()

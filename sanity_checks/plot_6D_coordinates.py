@@ -37,7 +37,7 @@ plt.legend(loc='upper center', bbox_to_anchor=(-0.3, 4.2),
 
 plt.subplots_adjust(wspace=0.4, hspace=0.4)
 
-savefig = True
+savefig = False
 if savefig:
     ax1.set_xlim(0, 150)
     ax2.set_xlim(0, 150)
@@ -45,6 +45,6 @@ if savefig:
     ax4.set_xlim(0, 150)
     ax5.set_xlim(0, 150)
     ax6.set_xlim(0, 150)
-    plt.savefig('oldVsNewSixtracklib.png')
+    plt.savefig('oldvsnewSixtracklib')
 else:
     plt.show()
