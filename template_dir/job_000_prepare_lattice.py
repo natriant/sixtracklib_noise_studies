@@ -33,10 +33,6 @@ mad.input('exec, AssignMultipoles;')
 
 mad.command.readtable(file='err.out', table='errors')
 errors = mad.table.errors
-pysixtrack_elements = pysixtrack.Line.from_madx_sequence(mad.sequence.sps, exact_drift=True)
-pysixtrack_elements.apply_madx_errors(errors)
-print(f'MBA after multiple errors: {pysixtrack_elements.elements[47].knl}')
-
 
 # Tune and Chromaticity matching
 mad.call('./sps/cmd/sps_matching.cmd')
@@ -45,20 +41,23 @@ mad.input('exec, SPS_setchroma_Q26(QPH, QPV);')
 mad.input('acta.31637, harmon=%d;'%pp.harmonic_number)
 mad.input('exec, match_chroma(QPH ,QPV);')
 
-# sanity check for correct implementation of multiple errors with PTC
-#mad.call('./sps/cmd/sps_ptc_QxQyvsdeltap.cmd')
-#mad.input('exec, plot_QxQyVSdeltap;')
-
-#quit()
 # Power the octupoles
 #mad.input('exec, match_octupoles(ayy_val, axy_val);') # use this line, if the input is the ayy, axy coefficients and then matching to klof, klod
+
 mad.input('klof=1.0;')
 mad.input('klod=1.0;')
-mad.call('./ptc/PTC.macro')
-mad.input('exec, PTCchroma;') # obtain the values of the detuning coefficients
-#mad.call('./sps/cmd/sps_ptc_QxQyvsdeltap.cmd')
-#mad.input('exec, plot_QxQyVSdeltap;')
-#quit()
+
+#mad.call('./ptc/PTC.macro')
+#mad.input('exec, PTCchroma;') # obtain the values of the detuning coefficients
+
+# Generate line 
+line = pysixtrack.Line.from_madx_sequence(mad.sequence.sps, install_apertures=pp.use_aperture, exact_drift=True)
+line.apply_madx_errors(errors)
+print(f'MBA after multiple errors: {line.elements[47].knl}')
+
+mad.call('./sps/cmd/sps_ptc_QxQyvsdeltap.cmd')
+mad.input('exec, plot_QxQyVSdeltap;')
+
 # twiss
 twtable = mad.twiss()
 
@@ -67,21 +66,23 @@ with open(pp.input_dir + 'twiss_summary.pkl', 'wb') as fid:
 
 # twiss for sanity check
 names = twtable.name
-index_init = np.where(names =='mystart:1')
-index_cc1 = np.where(names =='cravity.1:1')
-betay_init = twtable.bety[index_init]
-betay_cc1 = twtable.bety[index_cc1]
-muy_cc1 = twtable.muy[index_cc1]
-index_cc2 = np.where(names =='cravity.2:1')
-betay_cc2 = twtable.bety[index_cc2]
-muy_cc2 = twtable.muy[index_cc2]
-my_twiss_dict = {'betay_init': betay_init, 'betay_cc1': betay_cc1, 'muy_cc1':muy_cc1, 'betay_cc2': betay_cc2, 'muy_cc2':muy_cc2}
+index_init, index_cc1, index_cc2 = np.where(names =='mystart:1'), np.where(names =='cravity.1:1'), np.where(names =='cravity.2:1')
+betay_init, betay_cc1, betay_cc2 = twtable.bety[index_init], twtable.bety[index_cc1], twtable.bety[index_cc2]
+betax_init, betax_cc1, betax_cc2 = twtable.betx[index_init], twtable.betx[index_cc1], twtable.betx[index_cc2]
+mux_init, mux_cc1, mux_cc2 =  twtable.mux[index_init],  twtable.mux[index_cc1],  twtable.mux[index_cc2]
+muy_init, muy_cc1, muy_cc2 =  twtable.muy[index_init],  twtable.muy[index_cc1],  twtable.muy[index_cc2]
+alphay_init, alphay_cc1, alphay_cc2 = twtable.alfy[index_init], twtable.alfy[index_cc1], twtable.alfy[index_cc2]
+alphax_init, alphax_cc1, alphax_cc2 = twtable.alfx[index_init], twtable.alfx[index_cc1], twtable.alfx[index_cc2]
+
+my_twiss_dict = {'betay_init': betay_init, 'betax_init':betax_init, 'muy_init':muy_init,'mux_init':mux_init, 'alphay_init':alphay_init,'alphax_init':alphax_init, 'betay_cc1': betay_cc1,  'muy_cc1':muy_cc1, 'betax_cc1': betax_cc1,  'mux_cc1':mux_cc1, 'alphay_cc1': alphay_cc1,  'alphax_cc1':alphax_cc1,  'betay_cc2': betay_cc2, 'muy_cc2':muy_cc2,'betax_cc2': betax_cc2, 'muy_cc2':mux_cc2,  'alphay_cc2': alphay_cc2, 'alphax_cc2':alphax_cc2}
 with open(pp.input_dir + 'twiss_sanity_check.pkl', 'wb') as fid:
         pickle.dump(my_twiss_dict, fid)
 
+
+quit()
 # Generate line
-line = pysixtrack.Line.from_madx_sequence(mad.sequence.sps, 
-    install_apertures=pp.use_aperture)
+#line = pysixtrack.Line.from_madx_sequence(mad.sequence.sps, 
+#    install_apertures=pp.use_aperture)
 
 # enable RF
 i_cavity = line.element_names.index('acta.31637')
