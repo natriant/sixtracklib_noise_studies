@@ -38,7 +38,7 @@ Dx_wrt_CO, Dpx_wrt_CO, Dy_wrt_CO, Dpy_wrt_CO = 9e-4+float(sys.argv[1])*(-0.48342
 
 # Without dispersive contribution
 #Dx_wrt_CO, Dpx_wrt_CO, Dy_wrt_CO, Dpy_wrt_CO = 9e-4, 0, 2*7e-4, 0
-#Dsigma_wrt_CO, Ddelta_wrt_CO = 0.05, float(sys.argv[1])
+Dsigma_wrt_CO, Ddelta_wrt_CO = 0.05, float(sys.argv[1])
 
 
 with open(pp.input_dir + 'initial_distribution_wrt_CO.pkl', 'wb') as fid:
